@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Every Nuclear Test</title>
+<meta name="description" content="Every nuclear test since 1945 on one map: {{n|int}} explosions by eight countries, from Trinity to North Korea. Where they were, who set them off, how big they were, and whose land they were on.">
+<meta property="og:title" content="Every nuclear test, 1945 to 2017">
+<meta property="og:description" content="{{n|int}} nuclear tests mapped, from Trinity in 1945 to North Korea in 2017. {{peak_n|int}} in {{peak_year|raw}} alone; {{island_yield_pct|pc}} of all the explosive yield was set off on islands.">
+<meta property="og:image" content="https://maps.tristanhotham.com/nuclear-tests/header.png">
+<meta property="og:url" content="https://maps.tristanhotham.com/nuclear-tests/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Survey paper: warm off-white, black ink, signal orange-red for the atmosphere, slate for underground. */
+:root{
+  --bg:#F6F4EF; --panel:#EAE7DF; --fg:#1D2128; --muted:#636A72; --rule:#DDD8CC; --card:#FFFEFA; --border:#CBC5B8;
+  --hot:#C8442A; --cool:#2C6FBB; --gold:#C99A1B; --ink:#2B2F36; --land:#E6E2D8; --sea:#E9EEF0;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161C; --panel:#1C222B; --fg:#ECEEF1; --muted:#A2A8B0; --rule:#2E3540; --card:#171C23; --border:#444B57;
+  --hot:#FF7A5C; --cool:#7DB7E6; --gold:#F2C94E; --ink:#D9DDE3; --land:#232831; --sea:#141A21; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161C; --panel:#1C222B; --fg:#ECEEF1; --muted:#A2A8B0; --rule:#2E3540; --card:#171C23; --border:#444B57;
+  --hot:#FF7A5C; --cool:#7DB7E6; --gold:#F2C94E; --ink:#D9DDE3; --land:#232831; --sea:#141A21; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.62 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+.wrap{max-width:700px;margin:0 auto;padding-block:28px 64px}
+.wrap .bleed{width:min(1180px,calc(100vw - 32px));margin-left:calc((100% - min(1180px,100vw - 32px))/2);margin-right:0}
+a{color:inherit;text-decoration-color:var(--hot);text-underline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kicker b{background:var(--ink);color:var(--bg);padding:5px 8px;font-weight:500}
+header.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:end;border-bottom:6px double var(--fg);padding-bottom:22px;margin-top:18px}
+h1{font:900 clamp(44px,11vw,94px)/.9 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 .a{color:var(--hot)}
+.mark{width:clamp(78px,16vw,128px);height:auto;display:block;color:var(--fg)}
+.dek{grid-column:1/-1;font-size:21px;line-height:1.42;margin:8px 0 0;max-width:56ch}
+.byline{font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:14px}
+h2{font:800 34px/1.04 var(--display);letter-spacing:-.01em;margin:54px 0 10px;text-wrap:balance}
+h2 .n{font:500 13px/1 var(--mono);color:var(--hot);display:block;letter-spacing:.1em;margin-bottom:10px}
+h3{font:600 21px/1.25 var(--display);margin:30px 0 6px}
+p{margin:0 0 16px}
+.lede::first-letter{font:900 72px/.8 var(--display);float:left;margin:6px 10px 0 0;color:var(--hot)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.stats div{background:var(--card);padding:14px 12px}
+.stats b{display:block;font:900 clamp(22px,4.4vw,32px)/1 var(--display);letter-spacing:-.01em}
+.stats b.h{color:var(--hot)} .stats b.c{color:var(--cool)} .stats b.g{color:var(--gold)} .stats b.p{color:var(--ink)}
+.stats span{font:400 12px/1.35 var(--mono);color:var(--muted);display:block;margin-top:6px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.figure{margin:26px 0 30px}
+.fig-h{font:600 19px/1.25 var(--display);margin:0 0 4px}
+.fig-sub{font:400 13px/1.45 var(--mono);color:var(--muted);margin:0 0 12px}
+.src{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:10px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);fill:var(--fg)}
+.lab{font-size:12px}.halo{paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}.lab.m{fill:var(--muted)}.lab.b{font-weight:500}.lab.s{font-size:11px}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font:400 12px/1.45 var(--mono);padding:8px 10px;border-radius:3px;max-width:300px;z-index:100001;transform:translate(-50%,calc(-100% - 12px));display:none}
+.tip b{font-weight:500}
+.controls{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.scrollrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px;max-width:100%}
+.scrollrow .btn{flex:0 0 auto;white-space:nowrap}
+.ctl-l{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:2px;flex:0 0 auto;align-self:center}
+.btn{font:500 12px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.2)}
+.btn:focus-visible,input:focus-visible,summary:focus-visible,select:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+.btn.play{background:var(--hot);color:#fff;border-color:var(--hot);min-width:92px}
+.searchbox{position:relative;flex:1 1 260px;min-width:0}
+input[type=search]{font:400 15px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:10px 11px;min-height:40px;width:100%}
+.suggest{position:absolute;left:0;right:0;top:100%;margin:2px 0 0;padding:0;list-style:none;background:var(--card);border:1px solid var(--border);z-index:1001;font:400 13px/1.3 var(--mono);display:none;max-height:340px;overflow:auto}
+.suggest li{padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--rule)}
+.suggest li span{color:var(--muted)}
+.suggest li[aria-selected="true"],.suggest li:hover{background:var(--panel)}
+.yearbox{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:10px;align-items:center;margin:0 0 10px;font:500 13px/1 var(--mono)}
+.yearbox .yv{font:800 22px/1 var(--display);min-width:4.2ch;text-align:center}
+@media (max-width:600px){.yearbox{grid-template-columns:auto minmax(0,1fr) auto}.yearbox .play{grid-column:1/-1;justify-self:start}}
+.dual{position:relative;height:34px}
+.dual input[type=range]{position:absolute;left:0;right:0;top:4px;width:100%;pointer-events:none;-webkit-appearance:none;appearance:none;background:none;margin:0;height:26px}
+.dual input[type=range]::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--hot);border:2px solid var(--card);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.dual input[type=range]::-moz-range-thumb{pointer-events:auto;width:18px;height:18px;border-radius:50%;background:var(--hot);border:2px solid var(--card);cursor:pointer}
+.dual .track{position:absolute;left:0;right:0;top:15px;height:4px;background:var(--rule);border-radius:2px}
+.dual .fill{position:absolute;top:15px;height:4px;background:var(--hot);border-radius:2px}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+@media (max-width:900px){.mapgrid{grid-template-columns:1fr}}
+.side{background:var(--card);border:1px solid var(--border);padding:12px 12px 10px;font:400 13px/1.45 var(--mono);max-height:660px;overflow:auto}
+@media (max-width:900px){.side{max-height:none}}
+.side h4{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.side h4:first-child{margin-top:2px}
+.side .big{font:800 26px/1.1 var(--display);margin:2px 0 4px}
+.side .sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.side ol,.side ul{margin:4px 0 8px;padding-left:20px}
+.side li{margin:3px 0}
+.side li small,.side td small{color:var(--muted)}
+.side table{width:100%;border-collapse:collapse;margin:4px 0 6px}
+.side td{padding:4px 4px 4px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.side td.num{text-align:right;white-space:nowrap}
+.side .desc{font:400 13.5px/1.5 var(--body);background:var(--panel);padding:8px 10px;margin:8px 0}
+.back{font:400 12px var(--mono);background:none;border:0;color:var(--muted);padding:0;cursor:pointer;text-decoration:underline;margin-bottom:6px}
+.go{cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px}
+.sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.lmap{height:640px;border:1px solid var(--border);background:var(--sea);border-radius:2px}
+@media (max-width:600px){.lmap{height:min(62vh,470px)}}
+.leaflet-container{font:400 12px/1.4 var(--mono);background:var(--sea)}
+.dotcanvas{position:absolute;left:0;top:0;pointer-events:none}
+.lyrBtn{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;font:600 12px/1 var(--mono);padding:8px 10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lyrBtn[aria-expanded="true"]{background:var(--fg);color:var(--bg)}
+.lyrPanel{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:10px 12px 8px;margin-top:6px;width:250px;box-shadow:0 2px 10px rgba(0,0,0,.15);font:400 12px/1.3 var(--mono);max-height:min(70vh,520px);overflow:auto}
+.lyrPanel[hidden]{display:none}
+.lyrPanel .row{margin:0 0 9px}
+.lyrPanel label{display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:600}
+.lyrPanel input[type=range]{width:100%;accent-color:var(--fg)}
+.lyrPanel select{font:400 12px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--border);border-radius:2px;padding:2px 4px;width:100%;min-height:0}
+.lyrPanel .sub{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:11px;margin-top:3px}
+.lyrPanel .sub span{flex:0 0 58px}
+.lyrPanel .hd{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 7px;border-top:1px solid var(--rule);padding-top:9px}
+.lyrPanel .reset{font:400 11px var(--mono);color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.cityL{font:500 11px/1 var(--mono);color:var(--fg);white-space:nowrap;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 2px var(--bg);pointer-events:none}
+.cityL i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--fg);margin-right:4px;vertical-align:1px}
+.cityL.s{font-size:10px;font-weight:400}
+.cntL{font:700 11px/1 var(--mono);color:var(--fg);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;opacity:.75;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg);pointer-events:none;text-align:center}
+.siteL{font:600 11.5px/1.15 var(--mono);color:var(--fg);white-space:nowrap;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 3px var(--bg);pointer-events:none}
+.siteL small{display:block;font-weight:400;font-size:10px;color:var(--muted)}
+.mapnote{background:color-mix(in srgb,var(--card) 92%,transparent);border:1px solid var(--border);border-radius:3px;padding:6px 9px;font:400 12px/1.35 var(--mono);max-width:min(300px,62vw);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.mapnote b{font-weight:600}
+.mapnote:empty{display:none}
+.yearBadge{font:900 44px/1 var(--display);color:var(--fg);text-shadow:0 0 6px var(--bg),0 0 3px var(--bg);pointer-events:none;margin:6px 0 0 4px}
+.yearBadge small{display:block;font:500 12px/1.3 var(--mono);color:var(--fg);margin-top:4px}
+.yearBadge:empty{display:none}
+.leaflet-bar a,.leaflet-bar a:hover{background:var(--card);color:var(--fg);border-bottom-color:var(--border)}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--card) 85%,transparent)!important;color:var(--muted)}
+.leaflet-control-attribution a{color:var(--fg)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--card);color:var(--fg)}
+.leaflet-popup-content{font:400 12.5px/1.45 var(--mono);margin:10px 12px}
+.leaflet-popup-content b{font:700 15px/1.2 var(--display)}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font:400 12px/1.3 var(--mono);color:var(--muted);margin-top:8px;align-items:center}
+.legend span{display:inline-flex;align-items:center}
+.legend i{display:inline-block;width:13px;height:13px;margin-right:6px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+.legend i.sq{border-radius:2px}
+.legend svg{display:inline-block;vertical-align:middle}
+.pull{font:600 26px/1.25 var(--display);border-left:6px solid var(--hot);padding:4px 0 4px 18px;margin:30px 0}
+.note{background:var(--panel);border:1px solid var(--rule);padding:14px 16px;font-size:16px;margin:22px 0}
+.note h3{margin-top:0}
+table.tbl{width:100%;border-collapse:collapse;font:400 13px/1.4 var(--mono)}
+table.tbl th{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 6px 6px 0;border-bottom:2px solid var(--fg)}
+table.tbl td{padding:6px 6px 6px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.tbl td.r,table.tbl th.r{text-align:right;white-space:nowrap}
+table.tbl tr.go:hover td{background:var(--panel)}
+.tablebox{overflow:auto;border:1px solid var(--border);background:var(--card);padding:0 10px}
+.sitegrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:900px){.sitegrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.sitegrid{grid-template-columns:1fr}}
+.sitecard{background:var(--card);border:1px solid var(--border);border-top:5px solid var(--c,var(--fg));padding:10px 12px 8px;cursor:pointer}
+.sitecard:hover{background:var(--panel)}
+.sitecard h4{font:800 18px/1.1 var(--display);margin:0 0 2px}
+.sitecard .meta{font:400 11.5px/1.35 var(--mono);color:var(--muted);margin:0 0 6px}
+.sitecard .k{display:inline-block;font:500 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:4px 6px;border:1px solid var(--border);border-radius:2px;margin:0 4px 6px 0;color:var(--fg)}
+.sitecard p{font:400 14px/1.45 var(--body);margin:0 0 6px}
+details{margin:14px 0}
+summary{font:500 13px/1.4 var(--mono);cursor:pointer;color:var(--fg);padding:8px 0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cta a{font:500 13px/1 var(--mono);text-decoration:none;border:1px solid var(--fg);padding:11px 14px;border-radius:3px}
+.cta a.p{background:var(--hot);border-color:var(--hot);color:#fff}
+footer{border-top:6px double var(--fg);margin-top:56px;padding-top:16px;font:400 13px/1.55 var(--mono);color:var(--muted)}
+footer p{margin:0 0 10px}
+.theme{position:fixed;right:12px;bottom:12px;z-index:1002}
+@media print{.theme,.controls{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker"><b>Data study</b><span>Nuclear weapons</span><span>World, 1945 to 2017</span></div>
+<header class="hero">
+  <h1>Every nuclear <span class="a">test</span></h1>
+  <svg class="mark" viewBox="0 0 120 120" aria-hidden="true"><g id="heroMark"></g></svg>
+  <p class="dek">Since the Trinity test in the New Mexico desert in July 1945, eight countries have set off {{n|int}} nuclear test explosions. I mapped every one of them: where it was, who fired it, how big it was, and whose land or sea it was on.</p>
+</header>
+<div class="byline">Dr Tristan Hotham · Independent researcher · 2026 · Data: SIPRI and FOA (Bergkvist and Ferm 2000) via data is plural and TidyTuesday; Wikipedia (CC BY-SA); Natural Earth</div>
+
+<div class="stats">
+  <div><b class="p">{{n|int}}</b><span>nuclear tests by eight countries, 1945 to 2017, plus the two bombs dropped on Japan</span></div>
+  <div><b class="h">{{peak_n|int}}</b><span>tests in {{peak_year|raw}}, the peak year: one every {{peak_days_per_test|f1}} days</span></div>
+  <div><b class="g">{{yield_total_mid|mt0}} Mt</b><span>total explosive yield, central estimate ({{yield_total_lo|mt0}} to {{yield_total_hi|mt0}} megatons of TNT)</span></div>
+  <div><b class="c">{{island_yield_pct|pc}}</b><span>of all that yield was set off on islands, from the Arctic to the Pacific atolls</span></div>
+</div>
+
+<p class="lede">The SIPRI list of nuclear explosions, compiled by Nils-Olov Bergkvist and Ragnhild Ferm for the Stockholm International Peace Research Institute and the Swedish Defence Research Establishment, records {{n_sipri|int}} explosions from 1945 to 1998 with a date, a position, a method of firing and an estimate of the yield. I added North Korea's six tests from 2006 to 2017. Two of the explosions in the list were not tests: the bombs dropped on Hiroshima and Nagasaki in August 1945. They are shown on the map for reference, but every number on this page counts tests only.</p>
+<p>Most tests were small, and most were underground. A few dozen enormous atmospheric explosions in the 1950s and early 1960s, nearly all of them on remote islands, account for most of the energy ever released. This page tries to show both.</p>
+
+<h2><span class="n">01 · The map</span>Seventy-two years of tests</h2>
+<p>Each circle is one test, coloured by the country that fired it. The circle's radius grows with the cube root of the yield, the way the radius of blast damage does, so a 1,000 kiloton test is drawn ten times as wide as a 1 kiloton one. Press play to watch the years go by, drag the slider, or pick only atmospheric or underground tests. Click a circle for the record, or a site name for its story.</p>
+<div class="bleed" id="atlas">
+<div class="yearbox"><button class="btn play" id="play" aria-label="Play the years">▶ Play</button><span class="yv" id="y0v">1945</span><div class="dual"><div class="track"></div><div class="fill" id="yfill"></div><input type="range" id="y0" min="1945" max="2017" step="1" value="1945" aria-label="From year"><input type="range" id="y1" min="1945" max="2017" step="1" value="2017" aria-label="To year"></div><span class="yv" id="y1v">2017</span></div>
+<div class="controls"><div class="scrollrow" id="eraRow"><span class="ctl-l">Years</span></div></div>
+<div class="controls">
+  <div class="scrollrow" id="envRow"><span class="ctl-l">Where</span><button class="btn" data-e="all" aria-pressed="true">All</button><button class="btn" data-e="atm" aria-pressed="false">Atmospheric and underwater</button><button class="btn" data-e="ug" aria-pressed="false">Underground</button></div>
+  <div class="scrollrow" id="colRow"><span class="ctl-l">Colour</span><button class="btn" data-c="country" aria-pressed="true">Country</button><button class="btn" data-c="env" aria-pressed="false">Atmosphere or ground</button></div>
+</div>
+<div class="controls"><div class="scrollrow" id="ctyRow"><span class="ctl-l">Country</span></div></div>
+<div class="controls">
+  <div class="searchbox"><input type="search" id="q" placeholder="Search a test, a site, a country or a place" aria-label="Search a test, a site, a country or a place" autocomplete="off"><ul class="suggest" id="sug" role="listbox"></ul></div>
+</div>
+<div class="controls"><div class="scrollrow" id="focusRow"><span class="ctl-l">Zoom to</span></div></div>
+<div class="mapgrid">
+  <div><div id="map" class="lmap" role="application" aria-label="Map of nuclear tests, 1945 to 2017"></div>
+    <div class="legend" id="legend"></div></div>
+  <div class="side" id="side" aria-live="polite"></div>
+</div>
+<p class="src">Circles: {{n|int}} tests, 1945 to 1998 from the SIPRI list (Bergkvist and Ferm 2000) and 2006 to 2017 from Wikipedia's list of North Korean tests. Yield is the middle of the lower and upper estimates; where the source gives "less than 20 kilotons" the circle is drawn at 10. Where many tests share one position in the source (hundreds at the Nevada Test Site share the same rounded coordinates), the circles are spread over a small disc up to {{spread_max_deg|f2}} degrees across so each can be clicked; popups give the position as recorded. {{n_approx_pos|int}} records with no position are placed approximately and say so. Outlines: Natural Earth. Base map tiles © Esri.</p>
+</div>
+
+<h2><span class="n">02 · When</span>The race to 1962</h2>
+<p>The first years were slow: {{c.US.n|int}} tests would eventually be American, but there were only a handful before 1951. Then the Soviet Union, from 1949, and Britain, from 1952, joined in, and the numbers climbed. In 1958 there were {{n_1958|int}} tests. Then the United States, the Soviet Union and Britain paused: there were {{n_1959|int}} tests in 1959 and {{n_1960|int}} in 1960, all of them French. When the Soviet Union broke the pause in September 1961 the result was the busiest two years of testing there has ever been. In {{peak_year|raw}} there were {{peak_n|int}} tests, {{peak_by_country.US|int}} American and {{peak_by_country.USSR|int}} Soviet: one every {{peak_days_per_test|f1}} days. {{peak_atm|int}} of them were in the open air.</p>
+<div class="figure"><p class="fig-h">Nuclear tests per year, 1945 to 2017</p><p class="fig-sub">Stacked by country, or by where the device went off, or as explosive yield (megatons, central estimate). The shaded band is the 1958 to 1961 testing pause; dashed lines mark the treaties. Hover a bar.</p>
+<div class="controls"><div class="scrollrow" id="yrMode"><span class="ctl-l">Show</span><button class="btn" data-m="country" aria-pressed="true">Tests by country</button><button class="btn" data-m="env" aria-pressed="false">Atmosphere or ground</button><button class="btn" data-m="yield" aria-pressed="false">Yield</button></div></div>
+<div class="chart" id="yearChart"></div><div class="legend" id="yearLegend"></div></div>
+<p>The yield tells an even sharper story. The tests of 1961 and 1962 alone released {{yield_61_62_pct|pc}} of all the explosive energy of every test ever made, most of it in a few dozen Soviet hydrogen bombs over Novaya Zemlya.</p>
+
+<h2><span class="n">03 · Into the ground</span>After the 1963 treaty</h2>
+<p>On 5 August 1963 the United States, the Soviet Union and Britain signed the Partial Test Ban Treaty, which banned tests in the atmosphere, in outer space and under water. Testing did not stop. It went underground. Before the treaty, {{pre_atm_pct|pc}} of tests were in the atmosphere or underwater; after it, {{post_ug_pct|pc}} were underground. The number of tests hardly fell: about {{avg_1963_92|int}} a year from 1963 to 1992.</p>
+<p>Two countries did not sign. France carried on testing in the atmosphere until {{c.France.last_atm_year|raw}} ({{post_atm_fr|int}} tests after the treaty, all in French Polynesia), and China until {{c.China.last_atm_year|raw}} ({{post_atm_cn|int}}, at Lop Nur). The last atmospheric test anywhere was Chinese, on {{last_atm.date|raw}}.</p>
+<div class="figure"><p class="fig-h">Before and after the Partial Test Ban Treaty</p><p class="fig-sub">Each country's tests before and after 5 August 1963, split by where the device went off. Hover a bar.</p><div class="chart" id="envChart"></div><div class="legend" id="envLegend"></div></div>
+
+<h2><span class="n">04 · How big</span>Megatons</h2>
+<p>Yields are uncertain, and the SIPRI list gives most of them as a range. Taking the middle of each range, the {{n|int}} tests released about {{yield_total_mid|mt0}} megatons, somewhere between {{yield_total_lo|mt0}} and {{yield_total_hi|mt0}}: the equivalent of {{yield_total_mid|mt0}} million tonnes of TNT. The Soviet Union and the United States account for {{us_ussr_yield_pct|pc}} of it. The typical test was much smaller: the median was {{median_kt|int}} kilotons, and {{under_20_pct|pc}} of tests had an upper estimate of 20 kilotons or less. The {{mt_tests|int}} tests of a megaton or more made up {{mt_tests_yield_pct|pc}} of all the yield.</p>
+<p>One place stands out. Novaya Zemlya, the Arctic islands where the Soviet Union fired its biggest bombs, took {{nz_yield_pct|pc}} of all the yield ever tested, in {{site.novaya.n|int}} tests. Nevada had {{site.nevada.n|int}} tests, {{nevada_pct_n|pc}} of the world's total, but most were small and underground.</p>
+<div class="figure"><p class="fig-h">Total explosive yield, by country or by test site</p><p class="fig-sub">Central estimate in megatons; the thin line runs from the sum of the lower to the sum of the upper estimates. Hover a bar.</p>
+<div class="controls"><div class="scrollrow" id="ydMode"><span class="ctl-l">By</span><button class="btn" data-m="c" aria-pressed="true">Country</button><button class="btn" data-m="s" aria-pressed="false">Test site</button></div></div>
+<div class="chart" id="yieldChart"></div></div>
+
+<h2><span class="n">05 · The biggest</span>Tsar Bomba and Castle Bravo</h2>
+<p>The largest explosion ever set off was the Soviet test known as Tsar Bomba, dropped by parachute over Novaya Zemlya on {{tsar.date|raw}}. Its yield was about 50 megatons, {{tsar.x_hiroshima|int}} times the Hiroshima bomb and {{tsar.pct_total|pc}} of the yield of all tests put together. Of the twenty largest tests, {{top20_ussr|int}} were Soviet and {{top20_us|int}} American, and {{top20_1961_62|int}} took place in 1961 or 1962.</p>
+<p>The largest American test was Castle Bravo, at Bikini Atoll on 1 March 1954 (28 February in the SIPRI list, which uses Greenwich time). Its yield, 15 megatons, was far larger than its designers expected. As the Wikipedia list of tests puts it, the unanticipated yield and a change in the weather spread fallout eastward onto the inhabited Rongelap and Rongerik atolls, which were soon evacuated; the crew of a Japanese fishing boat, the Daigo Fukuryū Maru, also fell ill, and one of them died.</p>
+<div class="figure"><p class="fig-h">The twenty largest nuclear tests</p><p class="fig-sub">Central estimate of yield in megatons, with the source's range where it gives one. Hover a bar.</p><div class="chart" id="bigChart"></div><div class="legend" id="bigLegend"></div></div>
+
+<h2><span class="n">06 · Whose land</span>Colonies, trust territories and islands</h2>
+<p>Most tests were on the testing country's own national territory: {{kinds.0.pct|pc}} of them, mostly underground in Nevada, Kazakhstan and Xinjiang. But the biggest atmospheric tests were usually set off far from the capitals that ordered them. {{away_n|int}} tests ({{away_pct|pc}}) were in colonies, overseas territories, trust territories or another country's land, and they released {{away_yield_pct|pc}} of all the yield. And {{island_n|int}} tests ({{island_pct|pc}}) were on islands, which took {{island_yield_pct|pc}} of the yield.</p>
+<div class="figure"><p class="fig-h">Whose land the tests were on</p><p class="fig-sub">Share of tests and share of explosive yield, by the status of the land at the time of the test, and on islands against the mainland. Hover a bar.</p><div class="chart" id="kindChart"></div><div class="legend" id="kindLegend"></div></div>
+<p>Every one of France's {{c.France.n|int}} tests was outside metropolitan France: {{algeria.n|int}} in the Algerian Sahara, {{algeria.after_indep|int}} of them after Algeria's independence in July 1962, and {{polynesia.n|int}} on the atolls of Moruroa and Fangataufa in French Polynesia. Every one of Britain's {{c.UK.n|int}} was abroad too: {{australia.n|int}} in Australia, {{kiribati.uk|int}} on islands in the central Pacific that are now part of Kiribati, and {{uk_at_nevada|int}} in Nevada. The United States held {{marshall.n|int}} tests at Bikini and Enewetak in the Marshall Islands, then a United Nations trust territory under American administration; together they released {{marshall.pct_us_yield|pc}} of all American test yield. The Soviet Union and China tested only inside their own borders, though Semipalatinsk lay in the Kazakh Soviet republic, now independent Kazakhstan, and Lop Nur in Xinjiang.</p>
+<div class="figure"><p class="fig-h">The main test sites</p><p class="fig-sub">Click a card to see the site on the map. Notes are kept short and sourced; see Sources below.</p><div class="sitegrid" id="siteGrid"></div>
+<details><summary>All {{n_sites|int}} test sites</summary><div class="tablebox"><table class="tbl" id="siteTable"></table></div></details></div>
+<p class="pull">Most of the energy of nuclear testing was released over a few remote islands and atolls, far from the countries that ordered it.</p>
+
+<h2><span class="n">07 · The test ban</span>After 1996</h2>
+<p>The Comprehensive Nuclear-Test-Ban Treaty, which bans all nuclear explosions, opened for signature on 24 September 1996. It has not entered into force. The last American test was in {{c.US.last_year|raw}}, the last Soviet one in {{c.USSR.last_year|raw}}, the last British one in {{c.UK.last_year|raw}}; France stopped in January {{c.France.last_year|raw}} and China in July {{c.China.last_year|raw}}. Since the treaty opened there have been {{post_ctbt.n|int}} tests: {{post_ctbt.by.India|int}} by India and {{post_ctbt.by.Pakistan|int}} by Pakistan in May 1998, and {{post_ctbt.by.NKorea|int}} by North Korea between 2006 and 2017. In Wikipedia's words, there were no declared tests between Pakistan's Chagai-II and North Korea's first test, and none outside North Korea since.</p>
+<div class="figure"><p class="fig-h">North Korea's six tests</p><p class="fig-sub">Estimated yield in kilotons, lowest to highest estimate as given on Wikipedia's list of North Korean tests, with the middle marked. For scale: the Hiroshima bomb, {{hiroshima_kt|int}} kilotons. Hover a bar.</p><div class="chart" id="nkChart"></div></div>
+<p>The six North Korean tests grew from {{nk.first_lo|f1}} to {{nk.first_hi|int}} kilotons in 2006, possibly a fizzle, to {{nk.big_lo|int}} to {{nk.big_hi|int}} kilotons in September 2017, which North Korea claimed was a hydrogen bomb. All were underground, under the mountains at Punggye-ri. Large as that last test was, it was a small fraction of the biggest tests of the 1950s and 1960s. As of 2026, it has been {{years_since_last|int}} years since the last known nuclear test.</p>
+
+<h2><span class="n">08 · How I did this</span>Methods and caveats</h2>
+<p><b>The tests.</b> The main source is the list of nuclear explosions from 1945 to 1998 compiled by Bergkvist and Ferm (2000) for SIPRI and the Swedish Defence Research Establishment (FOA), as published by data is plural and the R for Data Science TidyTuesday project (2019). It gives each explosion's date, the testing country, a site code, a position, seismic magnitudes, depth or height, a lower and upper yield estimate, the purpose, a name where one is known and the method of firing. I added North Korea's six tests of 2006 to 2017 from Wikipedia's list of North Korean tests, taking the dates, positions and yield ranges from the page text only. Names for some of the largest Soviet and Chinese tests, and for the Indian and Pakistani tests, come from Wikipedia too.</p>
+<p><b>Counting.</b> This page counts {{n|int}} tests: {{n_sipri_tests|int}} from the SIPRI list (its {{n_sipri|int}} explosions less Hiroshima and Nagasaki) and {{n_nk|int}} North Korean. Other counts differ. Wikipedia's list gives {{wiki_tests|int}}, because it counts some salvo explosions, British safety trials and Soviet tests differently. Five devices fired together count as one test here, as they do in the SIPRI list.</p>
+<p><b>Yields</b> are estimates, many of them only an upper bound: {{n_range_0|int}} tests are recorded as "0 to" some figure. I use the middle of each range, and give the sum of the lower and upper estimates beside every total. Totals are dominated by a few dozen megaton tests, whose yields are well known, so the main findings do not depend on how the small tests are counted. <b>Atmospheric</b> here means in the air, on the ground, on a tower, barge or ship, on the water surface or in space; <b>underground</b> includes shafts, tunnels and shallow cratering shots; underwater is shown separately. <b>Land status</b> is the status of the place at the time of the test, as described in the sources below.</p>
+<p><b>What this does not show.</b> A map of tests is not a map of harm. Fallout drifted far from the sites; people living near Semipalatinsk, in the Marshall Islands, in Nevada's downwind communities, around Maralinga and in French Polynesia were exposed, as were many thousands of service personnel. The doses and their effects are studied elsewhere, notably by UNSCEAR, and are not in this data.</p>
+<details><summary>Sources and licences</summary>
+<ul>
+<li>Bergkvist, N.-O. and Ferm, R. (2000) Nuclear Explosions 1945 to 1998. Stockholm: Swedish Defence Research Establishment (FOA) and Stockholm International Peace Research Institute (SIPRI). Data via <a href="https://github.com/data-is-plural/nuclear-explosions">data is plural</a> (Jeremy Singer-Vine) and <a href="https://github.com/rfordatascience/tidytuesday/tree/main/data/2019/2019-08-20">rfordatascience/tidytuesday</a> (2019), credit Jesus Castagnetto.</li>
+<li>Wikipedia contributors: <a href="https://en.wikipedia.org/wiki/List_of_nuclear_weapons_tests">List of nuclear weapons tests</a>, <a href="https://en.wikipedia.org/wiki/List_of_nuclear_weapons_tests_of_North_Korea">List of nuclear weapons tests of North Korea</a>, <a href="https://en.wikipedia.org/wiki/Pokhran-II">Pokhran-II</a> and <a href="https://en.wikipedia.org/wiki/Chagai-I">Chagai-I</a>, revisions of 2026. CC BY-SA 4.0: the North Korean records, test names and the notes quoted or paraphrased from these pages are shared under the same licence.</li>
+<li>UNSCEAR (2000) Sources and Effects of Ionizing Radiation, Annex C: Exposures to the public from man-made sources of radiation. United Nations.</li>
+<li>Royal Commission into British Nuclear Tests in Australia (1985) Report. Canberra: Australian Government Publishing Service.</li>
+<li>Khalturin, V. I., Rautian, T. G., Richards, P. G. and Leith, W. S. (2005) A review of nuclear testing by the Soviet Union at Novaya Zemlya, 1955 to 1990. Science and Global Security 13: 1 to 42.</li>
+<li>Kuletz, V. L. (1998) The Tainted Desert: Environmental and Social Ruin in the American West. New York: Routledge.</li>
+<li>Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water (1963); Comprehensive Nuclear-Test-Ban Treaty (1996).</li>
+<li>Natural Earth countries and populated places (public domain). Base map tiles © Esri.</li>
+</ul></details>
+
+<div class="cta"><a class="p" href="https://doi.org/10.5281/zenodo.23857489">Read the paper</a><a href="https://github.com/Tristan-Hotham/nuclear-tests">Data and code</a><a href="https://blog.tristanhotham.com/2026/10/31/nuclear-tests/">Blog post</a></div>
+
+<footer>
+<p>Dr Tristan Hotham, Independent researcher. ORCID <a href="https://orcid.org/0000-0003-4931-9349">0000-0003-4931-9349</a>.</p>
+<p>Cite as: Hotham, T. (2026) Every nuclear test: where, by whom and how big, from Trinity to North Korea, 1945 to 2017. Zenodo. <a href="https://doi.org/10.5281/zenodo.23857489">https://doi.org/10.5281/zenodo.23857489</a></p>
+<p>Data: SIPRI and FOA list of nuclear explosions (Bergkvist and Ferm 2000) via data is plural and TidyTuesday; Wikipedia (CC BY-SA 4.0); Natural Earth. Licence: text, figures and derived data CC BY 4.0, except the material derived from Wikipedia, which is CC BY-SA 4.0; code MIT.</p>
+<p>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<button class="btn theme" id="theme" aria-label="Toggle dark mode">◐</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const R = /*RESULTS*/;
+const SITE = /*SITE*/;
+const NOTES = /*NOTES*/;
+const WORLD = /*WORLD*/;
+const CITIES = /*CITIES*/;
+const fmt = n => n == null || n === "" ? "n/a" : Math.round(n).toLocaleString("en-GB");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const tip = document.getElementById("tip");
+function showTip(h, x, y) { tip.innerHTML = h; tip.style.display = "block"; const w = tip.offsetWidth; x = Math.max(w / 2 + 8, Math.min(innerWidth - w / 2 - 8, x)); tip.style.left = x + scrollX + "px"; tip.style.top = y + scrollY + "px"; }
+function hideTip() { tip.style.display = "none"; }
+document.addEventListener("click", hideTip);
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const lbl = (svg, x, y, s, cls = "lab", anchor = "start") => { const t = el("text", { x, y, class: cls, "text-anchor": anchor }, svg); t.textContent = s; return t; };
+const redraws = [];
+function resp(box, render) { let last = 0; const go = force => { const w = Math.max(280, Math.round(box.clientWidth)); if (!force && Math.abs(w - last) < 4) return; last = w; box.innerHTML = ""; render(w, w < 560); }; new ResizeObserver(() => go()).observe(box); go(); redraws.push(() => go(true)); return () => go(true); }
+const isDark = () => { const r = document.documentElement; return r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const small = () => innerWidth < 900;
+const CTY = SITE.countries, CSH = SITE.cshort, ENVS = SITE.envs, SITES = SITE.sites, KINDS = SITE.kinds;
+const Y0 = 1945, Y1 = 2017;
+const kt = v => v == null ? "unknown" : v >= 1000 ? (v / 1000).toLocaleString("en-GB", { maximumFractionDigits: v >= 10000 ? 1 : 2 }) + " Mt" : v >= 10 ? fmt(v) + " kt" : (+v.toFixed(v < 1 ? 3 : 1)).toLocaleString("en-GB") + " kt";
+const mt = v => v >= 10000 ? fmt(v / 1000) : (v / 1000).toLocaleString("en-GB", { maximumFractionDigits: v >= 1000 ? 1 : 2 });
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const ddate = d => { d = String(d); return `${+d.slice(6)} ${MONTHS[+d.slice(4, 6) - 1]} ${d.slice(0, 4)}`; };
+const yr = p => Math.floor(p[2] / 1e4);
+const rng = p => p[6] == null ? "yield not known" : p[6] === p[7] ? kt(p[7]) : p[6] === 0 ? "less than " + kt(p[7]) : kt(p[6]) + " to " + kt(p[7]);
+
+/* hero mark: rings of growing yield around a point, the way the map draws them */
+(function () {
+  const g = document.getElementById("heroMark");
+  [[48, "#2C6FBB", .18], [34, "#C23B22", .22], [22, "#16998A", .3], [12, "#E0A01B", .5]].forEach(([r, c, o], k) => { el("circle", { cx: 60 - k * 3, cy: 60 + k * 4, r, fill: c, "fill-opacity": o, stroke: c, "stroke-width": 2.2 }, g); });
+  el("circle", { cx: 51, cy: 72, r: 3.2, fill: "currentColor" }, g);
+})();
+
+/* ---------- map machinery ---------- */
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+const ESRI_ATT = 'Tiles &copy; Esri, GEBCO, NOAA, National Geographic, Garmin, HERE, Geonames.org, and other contributors';
+const LYDEF = { base: "plain", hills: false, hillK: 40, labels: true, labelK: 70, names: false, nameLvl: 1, cnames: true, borders: true, sites: true, wartime: true, ghost: true, size: 1, alpha: 60 };
+const LY = { ...LYDEF };
+try { Object.assign(LY, JSON.parse(localStorage.getItem("nuc_layers") || "{}")); } catch (e) {}
+const saveLY = () => { try { localStorage.setItem("nuc_layers", JSON.stringify(LY)); } catch (e) {} };
+const HOME = () => small() ? [[24, 12], .5] : [[20, 8], 1.5];
+const map = L.map("map", { minZoom: .5, maxZoom: 13, maxBounds: [[-80, -240], [85, 240]], zoomSnap: .5, worldCopyJump: false }).setView(...HOME());
+["hills:250", "fill:400", "labels:450", "pts:600", "names:620"].forEach(s => { const [n, z] = s.split(":"); map.createPane(n); map.getPane(n).style.zIndex = z; });
+["hills", "labels", "names", "pts", "fill"].forEach(n => map.getPane(n).style.pointerEvents = "none");
+let base = null, hills = null, labels = null; const names = L.layerGroup(), cnames = L.layerGroup(), slabels = L.layerGroup();
+function setTiles() {
+  [base, labels, hills].forEach(l => { if (l) map.removeLayer(l); });
+  const t = isDark() ? "Dark" : "Light";
+  const url = LY.base === "ocean" ? ESRI + "Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}" : LY.base === "relief" ? ESRI + "World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}" : LY.base === "satellite" ? ESRI + "World_Imagery/MapServer/tile/{z}/{y}/{x}" : `${ESRI}Canvas/World_${t}_Gray_Base/MapServer/tile/{z}/{y}/{x}`;
+  base = L.tileLayer(url, { maxZoom: 16, maxNativeZoom: LY.base === "relief" || LY.base === "ocean" ? 13 : 16, attribution: ESRI_ATT }).addTo(map);
+  hills = L.tileLayer(ESRI + "Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, maxNativeZoom: 16, pane: "hills" });
+  labels = L.tileLayer(LY.base === "ocean" ? ESRI + "Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}" : `${ESRI}Canvas/World_${t}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 16, maxNativeZoom: 13, pane: "labels" });
+  applyLayers();
+}
+function applyLayers() {
+  if (!base) return;
+  if (LY.hills) { hills.addTo(map); hills.setOpacity(Math.min(1, .1 + LY.hillK / 120)); } else map.removeLayer(hills);
+  if (LY.labels) { labels.addTo(map); labels.setOpacity(LY.labelK / 100); } else map.removeLayer(labels);
+  if (LY.names) names.addTo(map); else map.removeLayer(names);
+  if (LY.cnames) cnames.addTo(map); else map.removeLayer(cnames);
+  if (LY.sites) slabels.addTo(map); else map.removeLayer(slabels);
+  cLayer.setStyle(cStyle); placeNames(); dots.draw();
+}
+function placeNames() {
+  names.clearLayers(); cnames.clearLayers(); slabels.clearLayers();
+  const z = map.getZoom(), bb = map.getBounds().pad(.05); const bxs = [];
+  const hit = bx => bxs.some(o => bx[0] < o[2] && bx[2] > o[0] && bx[1] < o[3] && bx[3] > o[1]);
+  if (LY.sites) {     // test site names first, to the right of the site, with tests and years
+    const order = R.sites.filter(s => s.kind !== 4 || LY.wartime).sort((a, b) => b.n - a.n);
+    for (const s of order) {
+      if (!bb.contains([s.lat, s.lon])) continue;
+      if (z < 2.5 && s.n < 12 && !["punggye", "maralinga", "reggane", "pokhran", "trinity", "hiroshima"].includes(s.key)) continue;
+      if (z < 4 && s.n < 3 && !["punggye", "trinity", "hiroshima", "nagasaki", "chagai"].includes(s.key)) continue;
+      const pt = map.latLngToContainerPoint([s.lat, s.lon]), nm = s.key === "ussrpne" ? "Soviet peaceful explosions" : s.name.replace(" Test Site and nearby ranges", "").replace(" Test Site", "").replace(" (Christmas Island)", "");
+      const off = 6 + Math.min(40, rad(s.max_kt) * (s.n > 40 ? 1.15 : 1)) + (s.key === "nevada" || s.key === "semipalatinsk" ? 0.25 * Math.pow(2, z) * .7 : 0);
+      const w = Math.max(nm.length * 7, 70), left = s.lon > 120 || (s.lon > -60 && s.lon < -30);
+      const bx = left ? [pt.x - off - w, pt.y - 9, pt.x - off, pt.y + 14] : [pt.x + off, pt.y - 9, pt.x + off + w, pt.y + 14];
+      if (hit(bx)) continue; bxs.push(bx);
+      L.marker([s.lat, s.lon], { pane: "names", interactive: false, keyboard: false, icon: L.divIcon({ className: "siteL", html: `<span style="display:block;text-align:${left ? "right" : "left"}">${esc(nm)}<small>${s.kind === 4 ? "wartime use, " + s.y0 : fmt(s.n) + (s.n === 1 ? " test, " : " tests, ") + (s.y0 === s.y1 ? s.y0 : s.y0 + " to " + s.y1)}</small></span>`, iconSize: [w, 24], iconAnchor: left ? [off + w, 9] : [-off, 9] }) }).addTo(slabels);
+    }
+  }
+  if (LY.names) {
+    const minPop = [[2, 8e6], [3, 3e6], [4, 1e6], [5, 4e5], [6, 1.5e5], [7, 6e4], [99, 2e4]].find(([zz]) => z < zz + (LY.nameLvl === 2 ? 1.5 : LY.nameLvl === 0 ? -1 : 0))[1] * (LY.nameLvl === 0 ? 2 : 1);
+    let n = 0;
+    for (const c of CITIES) {
+      if (c.pop < minPop || !bb.contains([c.lat, c.lon])) continue;
+      const pt = map.latLngToContainerPoint([c.lat, c.lon]), big = c.pop >= 5e6;
+      const bx = [pt.x - 4, pt.y - 8, pt.x + 10 + c.name.length * (big ? 6.9 : 6.3), pt.y + 7];
+      if (hit(bx)) continue;
+      bxs.push(bx); L.marker([c.lat, c.lon], { pane: "names", interactive: false, keyboard: false, icon: L.divIcon({ className: "cityL" + (big ? "" : " s"), html: `<i></i>${esc(c.name)}`, iconSize: null, iconAnchor: [3, 6] }) }).addTo(names);
+      if (++n >= 120) break;
+    }
+  }
+  if (LY.cnames && z >= 2.5 && z < 7) {
+    WORLD.features.forEach(f => { const g = SITE.cpos[f.properties.iso]; if (!g || !bb.contains([g[1], g[0]])) return; const nm = SITE.cname[f.properties.iso] || "";
+      if (z < 4 && (g[2] || 0) < 2e7) return; const pt = map.latLngToContainerPoint([g[1], g[0]]), w = nm.length * 7.2;
+      const bx = [pt.x - w / 2, pt.y - 7, pt.x + w / 2, pt.y + 7]; if (hit(bx)) return; bxs.push(bx);
+      L.marker([g[1], g[0]], { pane: "names", interactive: false, keyboard: false, icon: L.divIcon({ className: "cntL", html: esc(nm), iconSize: [w, 14], iconAnchor: [w / 2, 7] }) }).addTo(cnames); });
+  }
+}
+(function layerControl() {
+  const Ctl = L.Control.extend({ options: { position: "topright" }, onAdd() {
+    const d = L.DomUtil.create("div"); L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
+    d.innerHTML = `<button class="lyrBtn" aria-expanded="false">Map layers</button>
+<div class="lyrPanel" hidden>
+ <div class="row"><label style="font-weight:600">Base map</label><div class="sub"><select data-k="base" aria-label="Base map"><option value="plain">Plain grey</option><option value="ocean">Sea depth (bathymetry)</option><option value="relief">Shaded relief</option><option value="satellite">Satellite</option></select></div></div>
+ <div class="row"><label><input type="checkbox" data-k="hills"> Hill shading</label><div class="sub"><span>strength</span><input type="range" data-k="hillK" min="10" max="100" step="5" aria-label="Hill shading strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="labels"> Map labels</label><div class="sub"><span>strength</span><input type="range" data-k="labelK" min="20" max="100" step="5" aria-label="Map label strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="names"> Town names</label><div class="sub"><span>how many</span><select data-k="nameLvl" aria-label="How many town names"><option value="0">Biggest only</option><option value="1">Some</option><option value="2">Lots</option></select></div></div>
+ <div class="row"><label><input type="checkbox" data-k="cnames"> Country names</label></div>
+ <div class="row"><label><input type="checkbox" data-k="borders"> Borders</label></div>
+ <div class="hd">Study layers</div>
+ <div class="row"><label><input type="checkbox" data-k="sites"> Test site names</label></div>
+ <div class="row"><label><input type="checkbox" data-k="ghost"> Earlier tests in grey</label><div class="sub" style="display:block">tests before the years shown, as faint grey circles</div></div>
+ <div class="row"><label><input type="checkbox" data-k="wartime"> Hiroshima and Nagasaki</label><div class="sub" style="display:block">the two wartime bombs, 1945 (not tests)</div></div>
+ <div class="row"><label style="font-weight:600">Circles</label><div class="sub"><span>size</span><input type="range" data-k="size" min=".4" max="2.4" step=".1" aria-label="Circle size"></div><div class="sub"><span>strength</span><input type="range" data-k="alpha" min="20" max="100" step="5" aria-label="Circle strength"></div></div>
+ <button class="reset">Reset layers</button>
+</div>`;
+    return d; } });
+  map.addControl(new Ctl());
+  const box = map.getContainer(), btn = box.querySelector(".lyrBtn"), pan = box.querySelector(".lyrPanel");
+  btn.onclick = () => { const o = pan.hidden; pan.hidden = !o; btn.setAttribute("aria-expanded", o); };
+  const sync = () => pan.querySelectorAll("[data-k]").forEach(i => { const k = i.dataset.k; if (i.type === "checkbox") i.checked = LY[k]; else i.value = LY[k]; });
+  pan.querySelectorAll("[data-k]").forEach(i => i.addEventListener(i.type === "range" ? "input" : "change", () => {
+    const k = i.dataset.k; LY[k] = i.type === "checkbox" ? i.checked : (k === "base" ? i.value : +i.value);
+    if (k === "hillK") LY.hills = true; if (k === "labelK") LY.labels = true; if (k === "nameLvl") LY.names = true;
+    sync(); saveLY(); if (k === "base") setTiles(); else applyLayers(); legend(); side();
+  }));
+  pan.querySelector(".reset").onclick = () => { Object.assign(LY, LYDEF); saveLY(); sync(); setTiles(); legend(); side(); };
+  sync();
+})();
+const Badge = L.Control.extend({ options: { position: "topleft" }, onAdd() { const d = L.DomUtil.create("div", "yearBadge"); d.id = "badge"; return d; } });
+map.addControl(new Badge());
+const Note = L.Control.extend({ options: { position: "bottomleft" }, onAdd() { const d = L.DomUtil.create("div", "mapnote"); d.id = "mapnote"; L.DomEvent.disableClickPropagation(d); return d; } });
+map.addControl(new Note());
+L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
+
+/* ---------- state ---------- */
+const S = { col: "country", env: "all", y0: Y0, y1: Y1, cty: new Set(CTY.map((c, i) => i)), met: null, site: null, playing: false };
+function cStyle() { return { color: css("--border") || "#999", weight: LY.borders ? .6 : 0, fillColor: css("--land"), fillOpacity: 0, interactive: false }; }
+const cLayer = L.geoJSON(WORLD, { pane: "fill", style: cStyle, interactive: false }).addTo(map);
+
+/* ---------- circles on one canvas ---------- */
+let P = null, ORD = null, Z = -1, XY = null, VIS = [], CNT = null;
+const envOk = p => S.env === "all" || (S.env === "atm" ? p[4] < 2 : p[4] === 2);
+const keep = p => (p[12] === 1 || LY.wartime) && S.cty.has(p[3]) && envOk(p) && yr(p) >= S.y0 && yr(p) <= S.y1;
+const ghostOk = p => LY.ghost && p[12] === 1 && S.cty.has(p[3]) && envOk(p) && yr(p) < S.y0;
+const colOf = p => S.col === "env" ? ENVS[p[4]][1] : CTY[p[3]][1];
+const zf = () => { const z = map.getZoom(); return Math.max(.7, Math.min(2.2, Math.pow(2, (z - 2) * .35))); };
+const rad = y => Math.max(1.7, .62 * Math.cbrt(Math.max(.001, y == null ? 1 : y)) * LY.size * zf());
+const Dots = L.Layer.extend({
+  onAdd(m) { this._c = L.DomUtil.create("canvas", "dotcanvas"); m.getPane("pts").appendChild(this._c); m.on("moveend zoomend resize viewreset", this._reset, this); m.on("zoomstart", () => this._c.style.opacity = 0); this._reset(); },
+  onRemove(m) { L.DomUtil.remove(this._c); m.off("moveend zoomend resize viewreset", this._reset, this); },
+  _reset() { const s = map.getSize(), d = devicePixelRatio || 1; L.DomUtil.setPosition(this._c, map.containerPointToLayerPoint([0, 0])); this._c.width = s.x * d; this._c.height = s.y * d; this._c.style.width = s.x + "px"; this._c.style.height = s.y + "px"; this._c.style.opacity = 1; this.draw(); },
+  draw() {
+    if (!this._c) return; const ctx = this._c.getContext("2d"), d = devicePixelRatio || 1; ctx.setTransform(d, 0, 0, d, 0, 0); ctx.clearRect(0, 0, this._c.width, this._c.height); VIS = [];
+    if (!P) return;
+    const z = map.getZoom(), sz = map.getSize(), dark = isDark();
+    if (z !== Z) { Z = z; XY = new Float32Array(P.length * 2); P.forEach((p, i) => { const q = map.project([p[0], p[1]], z); XY[2 * i] = q.x; XY[2 * i + 1] = q.y; }); }
+    const o = map.getPixelOrigin(), off = map.containerPointToLayerPoint([0, 0]), ox = o.x + off.x, oy = o.y + off.y;
+    CNT = { n: 0, c: CTY.map(() => 0), e: ENVS.map(() => 0), y: 0, ylo: 0, yhi: 0, s: {}, war: 0 };
+    const al = LY.alpha / 100;
+    if (LY.ghost && S.y0 > Y0) {   // earlier tests, faint grey
+      ctx.fillStyle = dark ? "rgba(200,205,212,.18)" : "rgba(70,74,80,.16)"; ctx.strokeStyle = dark ? "rgba(200,205,212,.22)" : "rgba(70,74,80,.2)"; ctx.lineWidth = .8;
+      for (const i of ORD) { const p = P[i]; if (!ghostOk(p)) continue; const x = XY[2 * i] - ox, y = XY[2 * i + 1] - oy, r = rad(p[5]); if (x < -r || y < -r || x > sz.x + r || y > sz.y + r) continue; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); if (r > 5) ctx.stroke(); else ctx.fill(); }
+    }
+    ctx.lineWidth = .7; const stroke = dark ? "rgba(10,12,16,.75)" : "rgba(255,255,255,.85)";
+    for (const i of ORD) {             // biggest first, so small circles sit on top
+      const p = P[i]; if (!keep(p)) continue;
+      if (p[12] === 1) { CNT.n++; CNT.c[p[3]]++; CNT.e[p[4]]++; CNT.y += p[5] || 0; CNT.ylo += p[6] || 0; CNT.yhi += p[7] || 0; CNT.s[p[8]] = (CNT.s[p[8]] || 0) + 1; } else CNT.war++;
+      const x = XY[2 * i] - ox, y = XY[2 * i + 1] - oy, r = rad(p[5]); if (x < -r || y < -r || x > sz.x + r || y > sz.y + r) continue;
+      VIS.push(i); ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
+      if (p[12] === 0) { ctx.strokeStyle = dark ? "#fff" : "#000"; ctx.lineWidth = 2; ctx.stroke(); ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7); ctx.fillStyle = dark ? "#fff" : "#000"; ctx.fill(); ctx.lineWidth = .7; continue; }
+      ctx.globalAlpha = r > 14 ? al * .55 : al; ctx.fillStyle = colOf(p); ctx.fill(); ctx.globalAlpha = 1;
+      if (r > 14) { ctx.strokeStyle = colOf(p); ctx.lineWidth = 1.4; ctx.stroke(); ctx.lineWidth = .7; } else if (r >= 2.6) { ctx.strokeStyle = stroke; ctx.stroke(); }
+    }
+    if (S.met != null) { const i = S.met; const x = XY[2 * i] - ox, y = XY[2 * i + 1] - oy; ctx.beginPath(); ctx.arc(x, y, rad(P[i][5]) + 5, 0, 7); ctx.strokeStyle = dark ? "#fff" : "#000"; ctx.lineWidth = 2.2; ctx.stroke(); }
+  }
+});
+const dots = new Dots().addTo(map);
+function hitDot(cp) {     // the smallest circle that contains the point, else the nearest within 8 px
+  if (!P || !VIS.length) return -1; const o = map.getPixelOrigin(), off = map.containerPointToLayerPoint([0, 0]), ox = o.x + off.x, oy = o.y + off.y;
+  let best = -1, br = 1e9, near = -1, nd = 64;
+  for (const i of VIS) { const dx = XY[2 * i] - ox - cp.x, dy = XY[2 * i + 1] - oy - cp.y, d = dx * dx + dy * dy, r = rad(P[i][5]);
+    if (d <= r * r && r < br) { br = r; best = i; } else if (d < nd) { nd = d; near = i; } }
+  return best >= 0 && br < 40 ? best : near >= 0 ? near : best;
+}
+const tname = p => p[9] || (p[12] === 0 ? "" : "Unnamed test");
+const dtip = i => { const p = P[i]; return `<b>${esc(tname(p))}</b>${p[12] === 0 ? " (wartime use)" : ""}<br>${ddate(p[2])} · ${esc(CTY[p[3]][0])}<br>${esc(SITES[p[8]][1])}<br>${esc(SITE.type_name[p[10]] || p[10])} · ${rng(p)}`; };
+map.on("click", e => { const h = hitDot(e.containerPoint); if (h >= 0) pickTest(h, false); });
+map.on("mousemove", e => { const h = hitDot(e.containerPoint); map.getContainer().style.cursor = h >= 0 ? "pointer" : ""; const r = map.getContainer().getBoundingClientRect();
+  if (h >= 0) showTip(dtip(h), r.left + e.containerPoint.x, r.top + e.containerPoint.y); else hideTip(); });
+map.on("mouseout", hideTip);
+fetch("data/points.json").then(r => r.json()).then(j => { P = j.rows; ORD = P.map((p, i) => i).sort((a, b) => (P[b][5] || 0) - (P[a][5] || 0)); Z = -1; dots.draw(); side(); legend(); });
+
+/* ---------- controls ---------- */
+const y0 = document.getElementById("y0"), y1 = document.getElementById("y1");
+const ERAS = [["All", 1945, 2017], ["1945 to 1957", 1945, 1957], ["1958 to 1962", 1958, 1962], ["1963 to 1974", 1963, 1974], ["1975 to 1989", 1975, 1989], ["1990 to 2017", 1990, 2017]];
+function setYears(a, b, fromSlider) {
+  S.y0 = Math.max(Y0, Math.min(a, b)); S.y1 = Math.min(Y1, Math.max(a, b));
+  if (!fromSlider) { y0.value = S.y0; y1.value = S.y1; }
+  document.getElementById("y0v").textContent = S.y0; document.getElementById("y1v").textContent = S.y1;
+  const f = document.getElementById("yfill"), a0 = (Math.min(+y0.value, +y1.value) - Y0) / (Y1 - Y0) * 100, b0 = (Math.max(+y0.value, +y1.value) - Y0) / (Y1 - Y0) * 100; f.style.left = a0 + "%"; f.style.width = (b0 - a0) + "%";
+  document.querySelectorAll("#eraRow .btn").forEach(x => { const [p, q] = x.dataset.y.split(",").map(Number); x.setAttribute("aria-pressed", p === S.y0 && q === S.y1); });
+  dots.draw(); side(); badge();
+}
+[y0, y1].forEach(i => i.addEventListener("input", () => { stop(); setYears(+y0.value, +y1.value, true); }));
+(function eraRow() { const row = document.getElementById("eraRow");
+  ERAS.forEach(([n, a, b]) => { const x = document.createElement("button"); x.className = "btn"; x.dataset.y = a + "," + b; x.textContent = n; x.onclick = () => { stop(); setYears(a, b); }; row.appendChild(x); }); })();
+const press = (row, b) => document.querySelectorAll(row + " .btn").forEach(x => x.setAttribute("aria-pressed", x === b));
+document.querySelectorAll("#envRow .btn").forEach(b => b.onclick = () => { S.env = b.dataset.e; press("#envRow", b); dots.draw(); side(); });
+document.querySelectorAll("#colRow .btn").forEach(b => b.onclick = () => { S.col = b.dataset.c; press("#colRow", b); dots.draw(); legend(); });
+const resetCty = (function ctyRow() {
+  const row = document.getElementById("ctyRow"), list = CTY;
+  const all = document.createElement("button"); all.className = "btn"; all.textContent = "All"; all.setAttribute("aria-pressed", "true"); row.appendChild(all);
+  const bs = list.map(([n, c], i) => { const b = document.createElement("button"); b.className = "btn"; b.innerHTML = `<i style="background:${c}"></i>${esc(n)}`; b.setAttribute("aria-pressed", "false"); b.dataset.g = i; row.appendChild(b); return b; });
+  const sync = () => { const allOn = S.cty.size === list.length; all.setAttribute("aria-pressed", allOn); bs.forEach(b => b.setAttribute("aria-pressed", !allOn && S.cty.has(+b.dataset.g))); dots.draw(); side(); };
+  all.onclick = () => { S.cty = new Set(list.map((g, i) => i)); sync(); };
+  bs.forEach(b => b.onclick = () => { const g = +b.dataset.g; if (S.cty.size === list.length) S.cty = new Set([g]); else if (S.cty.has(g)) { S.cty.delete(g); if (!S.cty.size) S.cty = new Set(list.map((x, i) => i)); } else S.cty.add(g); sync(); });
+  return () => { S.cty = new Set(list.map((g, i) => i)); sync(); };
+})();
+
+/* ---------- play: one year at a time, earlier years in grey ---------- */
+let timer = null;
+function badge() { const b = document.getElementById("badge"); if (!S.playing || !CNT) { b.innerHTML = ""; return; } b.innerHTML = `${S.y1}<small>${fmt(CNT.n)} test${CNT.n === 1 ? "" : "s"}${CNT.y ? ", " + kt(CNT.y) : ""}</small>`; }
+function stop() { if (timer) clearInterval(timer); timer = null; if (S.playing) { S.playing = false; document.getElementById("play").textContent = "▶ Play"; badge(); } }
+document.getElementById("play").onclick = () => {
+  if (S.playing) return stop();
+  S.playing = true; document.getElementById("play").textContent = "❚❚ Pause";
+  let y = S.y0 === S.y1 && S.y1 < Y1 ? S.y1 : Y0; setYears(y, y);
+  timer = setInterval(() => { y++; if (y > 1998 && y < 2006) y = 2006; if (y > Y1) { stop(); return; } setYears(y, y); }, 650);
+};
+
+/* ---------- legend, side panel ---------- */
+function sizeKey() {
+  const vals = [[1, "1 kt"], [100, "100 kt"], [1000, "1 Mt"], [15000, "15 Mt"], [50000, "50 Mt"]].filter(v => rad(v[0]) <= 46), rs = vals.map(v => rad(v[0])), H = Math.ceil(2 * Math.max(...rs)) + 4;
+  let x = 16, s = ""; vals.forEach(([v, t], k) => { const r = rs[k]; s += `<circle cx="${x + r}" cy="${H - r - 2}" r="${r}" fill="none" stroke="currentColor" stroke-width="1"/>`; s += `<text x="${x + r}" y="${H + 12}" text-anchor="middle" style="font-size:10px;fill:currentColor">${t}</text>`; x += 2 * r + Math.max(18, 34 - 2 * r); });
+  return `<svg width="${x}" height="${H + 16}" viewBox="0 0 ${x} ${H + 16}" style="color:var(--muted)" aria-label="Circle sizes">${s}</svg>`;
+}
+function legend() {
+  const e = document.getElementById("legend"); let h = "";
+  h += (S.col === "env" ? ENVS : CTY).map(x => `<span><i style="background:${x[1]}"></i>${esc(x[0])}</span>`).join("");
+  h += `<span>${sizeKey()}</span>`;
+  if (LY.wartime) h += `<span><i style="background:none;border:2px solid var(--fg)"></i>Hiroshima and Nagasaki, 1945 (wartime use)</span>`;
+  if (LY.ghost && S.y0 > Y0) h += `<span><i style="background:rgba(70,74,80,.25)"></i>earlier tests</span>`;
+  e.innerHTML = h;
+}
+function note(h) { document.getElementById("mapnote").innerHTML = h || ""; }
+const swatch = c => `<i class="sw" style="background:${c}"></i>`;
+function siteHTML(k) {
+  const s = R.site[SITES[k][0]]; if (!s) return "";
+  return `<button class="back">Back</button><h4>${esc(KINDS[s.kind])}</h4><div class="big">${esc(s.name)}</div><p class="sub">${esc(s.today)}</p><table>
+<tr><td>Tests</td><td class="num">${fmt(s.n)}${s.kind === 4 ? " (wartime use)" : ""}</td></tr><tr><td>Years</td><td class="num">${s.y0 === s.y1 ? s.y0 : s.y0 + " to " + s.y1}</td></tr>
+<tr><td>In the air or underwater</td><td class="num">${fmt(s.atm)}</td></tr><tr><td>Underground</td><td class="num">${fmt(s.ug)}</td></tr>
+<tr><td>Yield, central</td><td class="num">${kt(s.yield_mid)}</td></tr><tr><td>Yield range</td><td class="num">${kt(s.yield_lo)} to ${kt(s.yield_hi)}</td></tr>
+<tr><td>Tested by</td><td class="num">${s.countries.map(c => esc(c)).join(", ")}</td></tr>${s.island ? "<tr><td>On an island</td><td class='num'>yes</td></tr>" : ""}</table>` + (NOTES[s.key] ? `<div class="desc">${NOTES[s.key]}</div>` : "");
+}
+function side() {
+  const box = document.getElementById("side"); let h = "";
+  if (S.met != null && P) {
+    const p = P[S.met];
+    h = `<button class="back">Back</button><h4>${p[12] ? esc(CTY[p[3]][0]) : "Wartime use, not a test"}</h4><div class="big">${esc(tname(p) || SITES[p[8]][1])}</div><table>
+<tr><td>Date</td><td class="num">${ddate(p[2])}</td></tr><tr><td>Site</td><td class="num"><span class="go" data-s="${p[8]}">${esc(SITES[p[8]][1])}</span></td></tr>
+<tr><td>How</td><td class="num">${esc(SITE.type_name[p[10]] || p[10])}</td></tr><tr><td>Yield</td><td class="num">${rng(p)}</td></tr>
+<tr><td>Purpose</td><td class="num">${esc(p[11])}</td></tr><tr><td>Position</td><td class="num">${p[13].toFixed(2)}, ${p[14].toFixed(2)}</td></tr></table>`;
+    if (p[15]) h += `<div class="desc">${esc(p[15])}${p[2] > 20000000 && p[16] > 900000 ? " (Wikipedia)" : ""}</div>`;
+    if (p[5] >= 1000) h += `<p class="sub">${(p[5] / R.hiroshima_kt).toLocaleString("en-GB", { maximumFractionDigits: 0 })} times the Hiroshima bomb (central estimate).</p>`;
+    h += `<p class="sub">Source: ${p[16] > 900000 ? "Wikipedia, List of nuclear weapons tests of North Korea (CC BY-SA)" : "SIPRI list of nuclear explosions (Bergkvist and Ferm 2000)"}.</p>`;
+  } else if (S.site != null) {
+    h = siteHTML(S.site);
+  } else if (CNT) {
+    h = `<h4>On the map now</h4><div class="big">${fmt(CNT.n)}</div><p class="sub">tests, ${S.y0 === S.y1 ? S.y0 : S.y0 + " to " + S.y1}${S.env === "atm" ? ", in the air or underwater" : S.env === "ug" ? ", underground" : ""}</p>`;
+    if (CNT.n) h += `<p class="sub">Yield about ${kt(CNT.y)} (${kt(CNT.ylo)} to ${kt(CNT.yhi)})</p>`;
+    h += `<table>` + CTY.map((c, i) => CNT.c[i] ? `<tr><td>${swatch(c[1])}${esc(c[0])}</td><td class="num">${fmt(CNT.c[i])}</td></tr>` : "").join("") + `</table>`;
+    h += `<h4>Where the device went off</h4><table>` + ENVS.map((e, i) => `<tr><td>${swatch(e[1])}${esc(e[0])}</td><td class="num">${fmt(CNT.e[i])}</td></tr>`).join("") + `</table>`;
+    const top = Object.entries(CNT.s).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    if (top.length) h += `<h4>Busiest sites</h4><ol>` + top.map(([k, n]) => `<li><span class="go" data-s="${k}">${esc(SITES[k][1])}</span> <small>${fmt(n)}</small></li>`).join("") + `</ol>`;
+    h += `<p class="sub">Press play to watch the years go by. Click a circle for the record, or a site for its story. Base map, labels and circle size are under Map layers.</p>`;
+    note("");
+  }
+  box.innerHTML = h;
+  const b = box.querySelector(".back"); if (b) b.onclick = () => { S.met = null; S.site = null; map.closePopup(); dots.draw(); side(); };
+  box.querySelectorAll("[data-s]").forEach(e => e.onclick = () => goSite(+e.dataset.s));
+}
+function toMap() { if (small()) document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "start" }); }
+function fitBox(b, maxZ) { const pad = Math.max(.3, (b[2] - b[0]) * .15); map.fitBounds([[b[0] - pad, b[1] - pad], [b[2] + pad, b[3] + pad]], { maxZoom: maxZ || 8 }); }
+function goSite(k, move = true) {
+  S.met = null; S.site = k; const s = R.site[SITES[k][0]];
+  if (move && s) { if (s.key === "ocean" || s.key === "ussrpne") fitBox(s.bbox, 5); else fitBox(s.bbox, 8); toMap(); }
+  note(s ? `<b>${esc(s.name)}</b>: ${fmt(s.n)} ${s.kind === 4 ? "bomb" : s.n === 1 ? "test" : "tests"}, ${s.y0 === s.y1 ? s.y0 : s.y0 + " to " + s.y1}` : ""); dots.draw(); side();
+}
+function pickTest(i, move) {
+  S.met = i; S.site = null; const p = P[i];
+  if (!keep(p)) { if (yr(p) < S.y0 || yr(p) > S.y1) setYears(Y0, Y1); resetCty(); S.env = "all"; press("#envRow", document.querySelector('#envRow [data-e="all"]')); if (p[12] === 0) { LY.wartime = true; applyLayers(); } }
+  if (move) { map.setView([p[0], p[1]], Math.max(map.getZoom(), 7)); toMap(); }
+  L.popup({ maxWidth: 280 }).setLatLng([p[0], p[1]]).setContent(dtip(i)).openOn(map);
+  note(`<b>${esc(tname(p) || SITES[p[8]][1])}</b>, ${ddate(p[2])}`); dots.draw(); side();
+}
+(function focusRow() {
+  const row = document.getElementById("focusRow");
+  const all = document.createElement("button"); all.className = "btn"; all.textContent = "World"; all.onclick = () => { S.met = null; S.site = null; map.closePopup(); map.setView(...HOME()); side(); toMap(); }; row.appendChild(all);
+  R.groups.forEach(g => { const x = document.createElement("button"); x.className = "btn"; x.textContent = g.name; x.onclick = () => { S.met = null; S.site = g.keys.length === 1 ? SITES.findIndex(s => s[0] === g.keys[0]) : null; fitBox(g.bbox, 8); note(`<b>${esc(g.name)}</b>: ${fmt(g.n)} tests, about ${kt(g.yield_mid)}`); side(); toMap(); }; row.appendChild(x); });
+})();
+
+/* ---------- search: tests, sites, countries and places ---------- */
+(function search() {
+  const inp = document.getElementById("q"), sug = document.getElementById("sug"); let opts = [], k = -1;
+  const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const cn = Object.entries(SITE.cname);
+  function build(q) {
+    const nq = norm(q); if (nq.length < 2) return [];
+    const out = [];
+    SITES.forEach((s, i) => { if (!R.site[s[0]]) return; const t = norm(s[1] + " " + s[2]); if (t.includes(nq)) out.push({ t: "s", n: s[1], i, s: norm(s[1]).startsWith(nq) ? 8 : 5 }); });
+    CTY.forEach((c, i) => { if (norm(c[0]).includes(nq) || norm(CSH[i]) === nq) out.push({ t: "t", n: c[0], i, s: 7 }); });
+    cn.forEach(([iso, n]) => { if (norm(n).startsWith(nq)) out.push({ t: "c", n, iso, s: 2 }); });
+    CITIES.forEach(c => { if (c.pop >= 50000 && norm(c.name).startsWith(nq)) out.push({ t: "p", n: c.name, c, s: 2 + Math.log10(c.pop) / 10 }); });
+    if (P) { let m = 0; for (let i = 0; i < P.length; i++) { const nm = norm(P[i][9] || ""); if (nm && nm.includes(nq)) { out.push({ t: "x", n: P[i][9], i, s: nm === nq ? 9 : nm.startsWith(nq) ? 6 : 3 }); if (++m > 300) break; } } }
+    return out.sort((a, b) => b.s - a.s).slice(0, 12);
+  }
+  const lab = o => o.t === "s" ? `${esc(o.n)} <span>test site</span>` : o.t === "t" ? `${esc(o.n)} <span>testing country</span>` : o.t === "c" ? `${esc(o.n)} <span>country</span>` : o.t === "p" ? `${esc(o.n)} <span>place</span>` : `${esc(o.n)} <span>${esc(CSH[P[o.i][3]])}, ${yr(P[o.i])}</span>`;
+  const show = () => { sug.innerHTML = opts.map((o, i) => `<li role="option" aria-selected="${i === k}" data-i="${i}">${lab(o)}</li>`).join(""); sug.style.display = opts.length ? "block" : "none"; };
+  const choose = o => { sug.style.display = "none"; inp.value = o.n; inp.blur(); stop();
+    if (o.t === "x") return pickTest(o.i, true);
+    if (o.t === "s") return goSite(o.i);
+    if (o.t === "t") { S.cty = new Set([o.i]); document.querySelectorAll("#ctyRow .btn").forEach(b => b.setAttribute("aria-pressed", b.dataset.g == o.i)); dots.draw(); side(); return toMap(); }
+    if (o.t === "p") { map.setView([o.c.lat, o.c.lon], 8); return toMap(); }
+    const f = WORLD.features.find(x => x.properties.iso === o.iso); if (f) map.fitBounds(L.geoJSON(f).getBounds(), { padding: [10, 10], maxZoom: 7 }); toMap(); };
+  inp.addEventListener("input", () => { opts = build(inp.value); k = -1; show(); });
+  inp.addEventListener("keydown", e => { if (e.key === "ArrowDown") { k = Math.min(opts.length - 1, k + 1); show(); e.preventDefault(); } else if (e.key === "ArrowUp") { k = Math.max(0, k - 1); show(); e.preventDefault(); } else if (e.key === "Enter" && opts.length) { choose(opts[Math.max(0, k)]); } else if (e.key === "Escape") { sug.style.display = "none"; } });
+  sug.addEventListener("click", e => { const li = e.target.closest("li"); if (li) choose(opts[+li.dataset.i]); });
+  document.addEventListener("click", e => { if (!e.target.closest(".searchbox")) sug.style.display = "none"; });
+})();
+map.on("zoomend moveend", placeNames);
+map.on("zoomend", legend);
+
+/* ---------- charts ---------- */
+let YMODE = "country", yearRedraw = null;
+function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v))); return [1, 2, 2.5, 5, 10].map(m => m * p).find(m => m >= v); }
+function yearChart() {
+  const box = document.getElementById("yearChart");
+  const setLeg = () => { document.getElementById("yearLegend").innerHTML = (YMODE === "env" ? ENVS : CTY).map(([n, c]) => `<span><i class="sq" style="background:${c}"></i>${esc(n)}</span>`).join("") + `<span><i class="sq" style="background:var(--panel);border:1px solid var(--border)"></i>1958 to 1961 testing pause</span>`; };
+  setLeg();
+  yearRedraw = resp(box, (w, sm) => {
+    setLeg();
+    const rows = YMODE === "env" ? R.years_env : YMODE === "yield" ? R.years_yield.map(r => [r[0], ...r.slice(1).map(v => v / 1000)]) : R.years, cols = YMODE === "env" ? ENVS : CTY;
+    const h = sm ? 300 : 380, m = { l: 44, r: 8, t: sm ? 54 : 46, b: 26 };
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Nuclear tests per year, 1945 to 2017" }, box);
+    const tot = rows.map(r => r.slice(1).reduce((a, b) => a + b, 0)), mx = niceMax(Math.max(...tot) * 1.04), H = v => (h - m.t - m.b) * v / mx;
+    const n = rows.length, bw = (w - m.l - m.r) / n, X = y => m.l + (y - Y0) * bw;
+    el("rect", { x: X(1958.84), y: m.t - 6, width: X(1961.67) - X(1958.84), height: h - m.t - m.b + 6, fill: css("--panel") }, svg);
+    const step = mx / 4; for (let k = 0; k <= 4; k++) { const v = k * step, y = h - m.b - H(v); el("line", { x1: m.l, x2: w - m.r, y1: y, y2: y, stroke: css("--rule") }, svg); lbl(svg, m.l - 6, y + 4, YMODE === "yield" ? (v ? fmt(v) + " Mt" : "0") : fmt(v), "lab s m", "end"); }
+    rows.forEach((r, i) => { const x = X(r[0]); let y = h - m.b;
+      r.slice(1).forEach((v, j) => { if (!v) return; const hh = H(v); y -= hh; el("rect", { x: x + .3, y, width: Math.max(.6, bw - .9), height: hh, fill: cols[j][1] }, svg); });
+      if (r[0] % (sm ? 10 : 5) === 0) lbl(svg, x + bw / 2, h - 8, String(r[0]), "lab s m", "middle");
+      const hit = el("rect", { x, y: m.t, width: bw, height: h - m.t - m.b, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", ev => { const yy = R.years_yield[i].slice(1).reduce((a, b) => a + b, 0); showTip(`<b>${r[0]}</b>: ${fmt(R.years[i].slice(1).reduce((a, b) => a + b, 0))} tests, about ${kt(yy)}<br>` + (YMODE === "env" ? R.years_env[i].slice(1).map((v, j) => v ? `${esc(ENVS[j][0])}: ${fmt(v)}` : "").filter(Boolean).join("<br>") : R.years[i].slice(1).map((v, j) => v ? `${esc(CTY[j][0])}: ${fmt(v)}${YMODE === "yield" ? ", " + kt(R.years_yield[i][j + 1]) : ""}` : "").filter(Boolean).join("<br>")), ev.clientX, ev.clientY); });
+      hit.addEventListener("mouseleave", hideTip); });
+    const T = [[1963.6, sm ? "1963 treaty" : "Partial Test Ban Treaty, 1963", 0], [1974.5, sm ? "1974" : "Threshold treaty, 1974", 1], [1996.73, sm ? "CTBT 1996" : "Test-Ban Treaty, 1996", 0]];
+    T.forEach(([yy, t, row]) => { const x = X(yy); el("line", { x1: x, x2: x, y1: m.t - 18 + row * 14, y2: h - m.b, stroke: css("--fg"), "stroke-dasharray": "3 3", opacity: .7 }, svg); lbl(svg, x + 4, m.t - 22 + row * 14, t, "lab s halo"); });
+    lbl(svg, (X(1958.84) + X(1961.67)) / 2, m.t - 10 + (sm ? 0 : 0), "pause", "lab s m", "middle");
+    const pk = rows.findIndex(r => r[0] === (YMODE === "yield" ? 1962 : R.peak_year)), pv = tot[pk];
+    lbl(svg, sm ? X(rows[pk][0]) + bw + 3 : X(rows[pk][0]) - 4, h - m.b - H(pv) + 10, YMODE === "yield" ? `${fmt(pv)} Mt in 1962` : sm ? `${fmt(pv)} in ${rows[pk][0]}` : `${fmt(pv)} tests in ${rows[pk][0]}`, "lab s b halo", sm ? "start" : "end");
+  });
+}
+document.querySelectorAll("#yrMode .btn").forEach(b => b.onclick = () => { YMODE = b.dataset.m; press("#yrMode", b); if (yearRedraw) yearRedraw(); });
+function envChart() {
+  document.getElementById("envLegend").innerHTML = ENVS.map(([n, c]) => `<span><i class="sq" style="background:${c}"></i>${esc(n)}</span>`).join("");
+  resp(document.getElementById("envChart"), (w, sm) => {
+    const C = R.countries, lw = sm ? 78 : 120, rh = 22, gap = 14, h = C.length * (2 * rh + gap) + 24, x0 = lw + (sm ? 46 : 56), x1 = w - 6;
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Tests before and after the Partial Test Ban Treaty, by country" }, document.getElementById("envChart"));
+    lbl(svg, x0, 12, "share of the country's tests in each period", "lab s m");
+    C.forEach((c, i) => { const y = 22 + i * (2 * rh + gap); lbl(svg, 0, y + rh + 4, sm ? c.short : c.name, "lab b");
+      const per = [["before", R.pre_by[i]], ["after", R.post_by[i]]];
+      per.forEach(([nm, v], k) => { const yy = y + k * rh, tot = v.reduce((a, b) => a + b, 0); lbl(svg, x0 - 6, yy + 14, nm, "lab s m", "end");
+        if (!tot) { lbl(svg, x0, yy + 14, "no tests", "lab s m"); return; }
+        let x = x0; v.forEach((n, j) => { if (!n) return; const bw = (x1 - x0) * n / tot; const r = el("rect", { x, y: yy + 2, width: Math.max(.8, bw - .6), height: rh - 5, fill: ENVS[j][1] }, svg);
+          if (bw > 30) lbl(svg, x + 4, yy + 14, fmt(n), "lab s").setAttribute("style", "fill:#fff;font-weight:500");
+          r.addEventListener("mousemove", ev => showTip(`<b>${esc(c.name)}, ${nm} 5 August 1963</b><br>${esc(ENVS[j][0])}: ${fmt(n)} of ${fmt(tot)} tests (${Math.round(100 * n / tot)}%)`, ev.clientX, ev.clientY)); r.addEventListener("mouseleave", hideTip); x += bw; }); }); });
+  });
+}
+let YDMODE = "c", ydRedraw = null;
+function yieldChart() {
+  ydRedraw = resp(document.getElementById("yieldChart"), (w, sm) => {
+    const rows = YDMODE === "c" ? R.countries.map((c, i) => ({ n: c.name, mid: c.yield_mid, lo: c.yield_lo, hi: c.yield_hi, col: CTY[i][1], sub: fmt(c.n) + " tests" })) :
+      R.site_rank_yield.slice(0, 15).map(k => { const s = R.site[k], ci = CTY.findIndex(c => c[0] === s.countries[0]); return { n: s.name.replace(" and nearby ranges", "").replace(" (mostly peaceful explosions)", ""), mid: s.yield_mid, lo: s.yield_lo, hi: s.yield_hi, col: CTY[ci][1], sub: fmt(s.n) + " tests, " + s.today }; });
+    const lw = sm ? 120 : 270, rh = 34, h = rows.length * rh + 26, x0 = lw, x1 = w - (sm ? 70 : 110), mx = Math.max(...rows.map(r => r.hi)), X = v => x0 + (x1 - x0) * v / mx;
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Total explosive yield by " + (YDMODE === "c" ? "country" : "test site") }, document.getElementById("yieldChart"));
+    for (let v = 0; v <= mx; v += sm ? 200000 : 100000) { el("line", { x1: X(v), x2: X(v), y1: 14, y2: h - 4, stroke: css("--rule") }, svg); lbl(svg, X(v), 10, fmt(v / 1000) + (v ? " Mt" : ""), "lab s m", "middle"); }
+    rows.forEach((r, i) => { const y = 20 + i * rh;
+      const nm = sm && r.n.length > 17 ? r.n.slice(0, 16) + "." : r.n; lbl(svg, x0 - 8, y + 13, nm, "lab b", "end"); if (!sm) lbl(svg, x0 - 8, y + 26, r.sub.length > 40 ? r.sub.slice(0, 38).replace(/[ ,]+\S*$/, "") : r.sub, "lab s m", "end");
+      const b = el("rect", { x: x0, y: y + 3, width: Math.max(1.5, X(r.mid) - x0), height: rh - 13, fill: r.col, rx: 1.5 }, svg);
+      el("line", { x1: X(r.lo), x2: X(r.hi), y1: y + 3 + (rh - 13) / 2, y2: y + 3 + (rh - 13) / 2, stroke: css("--fg"), "stroke-width": 1.2 }, svg);
+      [r.lo, r.hi].forEach(v => el("line", { x1: X(v), x2: X(v), y1: y + 6, y2: y + rh - 13, stroke: css("--fg"), "stroke-width": 1.2 }, svg));
+      lbl(svg, Math.max(X(r.hi), X(r.mid)) + 6, y + 17, kt(r.mid), "lab b");
+      b.addEventListener("mousemove", ev => showTip(`<b>${esc(r.n)}</b><br>${esc(r.sub)}<br>Yield about ${kt(r.mid)} (${kt(r.lo)} to ${kt(r.hi)})<br>${(100 * r.mid / R.yield_total_mid).toFixed(1)}% of all test yield`, ev.clientX, ev.clientY)); b.addEventListener("mouseleave", hideTip); });
+  });
+}
+document.querySelectorAll("#ydMode .btn").forEach(b => b.onclick = () => { YDMODE = b.dataset.m; press("#ydMode", b); if (ydRedraw) ydRedraw(); });
+function bigChart() {
+  document.getElementById("bigLegend").innerHTML = [0, 1].map(i => `<span><i class="sq" style="background:${CTY[i][1]}"></i>${esc(CTY[i][0])}</span>`).join("") + `<span><i class="sq" style="background:var(--fg);height:2px"></i>range of estimates</span>`;
+  resp(document.getElementById("bigChart"), (w, sm) => {
+    const B = R.biggest, lw = sm ? 128 : 250, rh = sm ? 30 : 27, h = B.length * rh + 26, x0 = lw, x1 = w - 52, mx = 50000, X = v => x0 + (x1 - x0) * v / mx;
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "The twenty largest nuclear tests by yield" }, document.getElementById("bigChart"));
+    for (let v = 0; v <= mx; v += 10000) { el("line", { x1: X(v), x2: X(v), y1: 14, y2: h - 4, stroke: css("--rule") }, svg); if (!sm || v % 20000 === 0) lbl(svg, X(v), 10, v / 1000 + (v ? " Mt" : ""), "lab s m", "middle"); }
+    B.forEach((b, i) => { const y = 18 + i * rh, ci = CTY.findIndex(c => c[0] === b.country), nm = b.name.replace(", Soviet test no. 130", "").replace("Soviet test no.", "Soviet no.");
+      lbl(svg, x0 - 8, y + (sm ? 10 : 14), nm, "lab b", "end"); lbl(svg, x0 - 8, y + (sm ? 22 : 14), sm ? `${b.year}` : "", "lab s m", "end");
+      const yy = y + rh / 2 - 2; el("line", { x1: x0, x2: X(b.mid), y1: yy, y2: yy, stroke: CTY[ci][1], "stroke-width": 2 }, svg);
+      if (b.hi > b.lo) el("line", { x1: X(b.lo), x2: X(b.hi), y1: yy, y2: yy, stroke: css("--fg"), "stroke-width": 1, "stroke-dasharray": "2 2" }, svg);
+      const c = el("circle", { cx: X(b.mid), cy: yy, r: 5.5, fill: CTY[ci][1], stroke: css("--card"), "stroke-width": 1.4 }, svg);
+      if (!sm) { const t = `${b.site.replace(" (Christmas Island)", "")}, ${b.year}`, room = x1 + 46 - X(b.hi) > t.length * 6.8 + 10; lbl(svg, room ? X(b.hi) + 8 : X(b.lo) - 10, room ? yy + 4 : yy - 6, t, "lab s m halo", room ? "start" : "end"); }
+      c.addEventListener("mousemove", ev => showTip(`<b>${esc(b.name)}</b><br>${esc(b.date)} · ${esc(b.country)}<br>${esc(b.site)}<br>${b.lo === b.hi ? kt(b.mid) : "about " + kt(b.mid) + " (" + kt(b.lo) + " to " + kt(b.hi) + ")"}`, ev.clientX, ev.clientY)); c.addEventListener("mouseleave", hideTip); });
+  });
+}
+const KCOL = ["#8D939B", "#C8442A", "#E8A33A", "#5FA8D3"];
+function kindChart() {
+  document.getElementById("kindLegend").innerHTML = KINDS.slice(0, 4).map((k, i) => `<span><i class="sq" style="background:${KCOL[i]}"></i>${esc(k)}</span>`).join("") + `<span><i class="sq" style="background:#2E86AB"></i>On islands</span><span><i class="sq" style="background:#CFC9BC"></i>Mainland</span>`;
+  resp(document.getElementById("kindChart"), (w, sm) => {
+    const rows = [["Tests", R.kinds.map(k => k.n), KCOL], ["Yield", R.kinds.map(k => k.yield_mid), KCOL], ["Tests", [R.island_n, R.n - R.island_n], ["#2E86AB", "#CFC9BC"]], ["Yield", [R.island_yield, R.yield_total_mid - R.island_yield], ["#2E86AB", "#CFC9BC"]]];
+    const lw = sm ? 52 : 70, rh = 34, h = rows.length * rh + 34, x0 = lw, x1 = w - 4;
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Share of tests and yield by status of the land, and on islands" }, document.getElementById("kindChart"));
+    lbl(svg, x0, 10, "status of the land", "lab s m"); lbl(svg, x0, 2 * rh + 24, "islands or mainland", "lab s m");
+    rows.forEach(([nm, vals, cols], i) => { const y = 16 + i * rh + (i >= 2 ? 16 : 0), tot = vals.reduce((a, b) => a + b, 0); let x = x0;
+      lbl(svg, x0 - 8, y + 17, nm, "lab b", "end");
+      vals.forEach((v, j) => { if (!v) return; const bw = (x1 - x0) * v / tot; const r = el("rect", { x, y: y + 2, width: Math.max(.8, bw - .8), height: rh - 8, fill: cols[j] }, svg);
+        if (bw > 34) lbl(svg, x + 5, y + 18, Math.round(100 * v / tot) + "%", "lab s").setAttribute("style", "fill:#fff;font-weight:500");
+        const label = i < 2 ? KINDS[j] : (j ? "Mainland" : "On islands");
+        r.addEventListener("mousemove", ev => showTip(`<b>${esc(label)}</b><br>${nm === "Tests" ? fmt(v) + " tests" : "about " + kt(v)}: ${(100 * v / tot).toFixed(1)}% of ${nm === "Tests" ? "all tests" : "all yield"}`, ev.clientX, ev.clientY)); r.addEventListener("mouseleave", hideTip); x += bw; }); });
+  });
+}
+const CARDS = ["nevada", "semipalatinsk", "novaya", "bikini", "enewetak", "moruroa", "lopnur", "kiritimati", "maralinga", "inekker", "reggane", "punggye"];
+function siteGrid() {
+  const g = document.getElementById("siteGrid");
+  g.innerHTML = CARDS.map(k => { const s = R.site[k], ci = CTY.findIndex(c => c[0] === s.countries[0]); return `<div class="sitecard" style="--c:${CTY[ci][1]}" data-k="${k}" role="button" tabindex="0"><h4>${esc(s.name.replace(" and nearby ranges", ""))}</h4><p class="meta">${esc(s.today)} · ${s.countries.map(esc).join(" and ")} · ${s.y0 === s.y1 ? s.y0 : s.y0 + " to " + s.y1}<br>${fmt(s.n)} tests (${fmt(s.atm)} in the air or underwater) · about ${kt(s.yield_mid)}</p><span class="k">${esc(KINDS[s.kind])}</span>${s.island ? '<span class="k">Island</span>' : ""}<p>${NOTES[k] || ""}</p></div>`; }).join("");
+  const go = k => { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => goSite(SITES.findIndex(s => s[0] === k)), 300); };
+  g.querySelectorAll("[data-k]").forEach(e => { e.onclick = ev => { if (ev.target.closest("a")) return; go(e.dataset.k); }; e.onkeydown = ev => { if (ev.key === "Enter") go(e.dataset.k); }; });
+  const t = document.getElementById("siteTable");
+  t.innerHTML = `<thead><tr><th>Site</th><th>Today</th><th>Tested by</th><th class="r">Tests</th><th class="r">Air or water</th><th class="r">Yield</th><th>Land at the time</th></tr></thead><tbody>` +
+    R.sites.filter(s => s.kind !== 4).sort((a, b) => b.n - a.n).map(s => `<tr class="go" data-k="${s.key}"><td>${esc(s.name)}</td><td>${esc(s.today)}</td><td>${s.countries.map(esc).join(", ")}</td><td class="r">${fmt(s.n)}</td><td class="r">${fmt(s.atm)}</td><td class="r">${kt(s.yield_mid)}</td><td>${esc(KINDS[s.kind])}${s.key === "nevada" ? " (British tests: another state's)" : s.key === "kiritimati" ? " (US tests: another state's colony)" : ""}</td></tr>`).join("") + `</tbody>`;
+  t.querySelectorAll("[data-k]").forEach(e => e.onclick = () => go(e.dataset.k));
+}
+function nkChart() {
+  resp(document.getElementById("nkChart"), (w, sm) => {
+    const T = R.nk.tests, lw = sm ? 110 : 150, rh = 34, h = T.length * rh + 30, x0 = lw, x1 = w - 60, mx = 300, X = v => x0 + (x1 - x0) * v / mx;
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Estimated yields of North Korea's six tests" }, document.getElementById("nkChart"));
+    for (let v = 0; v <= mx; v += 50) { el("line", { x1: X(v), x2: X(v), y1: 14, y2: h - 4, stroke: css("--rule") }, svg); lbl(svg, X(v), 10, v + (v ? " kt" : ""), "lab s m", "middle"); }
+    const hx = X(R.hiroshima_kt); el("line", { x1: hx, x2: hx, y1: 14, y2: h - 4, stroke: css("--hot"), "stroke-dasharray": "4 3" }, svg);
+    lbl(svg, hx + 4, h - 8, "Hiroshima", "lab s halo").setAttribute("style", `fill:${css("--hot")}`);
+    T.forEach((t, i) => { const y = 18 + i * rh, yy = y + 12;
+      lbl(svg, x0 - 8, y + 16, t.date.replace(/^\d+ /, ""), "lab b", "end");
+      const r = el("rect", { x: X(t.lo), y: yy - 6, width: Math.max(3, X(t.hi) - X(t.lo)), height: 12, fill: CTY[7][1], opacity: .55, rx: 2 }, svg);
+      el("circle", { cx: X((t.lo + t.hi) / 2), cy: yy, r: 4, fill: CTY[7][1], stroke: css("--card"), "stroke-width": 1.2 }, svg);
+      lbl(svg, X(t.hi) + 6, yy + 4, `${t.lo} to ${t.hi} kt`, "lab s");
+      r.addEventListener("mousemove", ev => showTip(`<b>${esc(t.date)}</b><br>${t.lo} to ${t.hi} kilotons<br>${esc(t.note)} (Wikipedia)`, ev.clientX, ev.clientY)); r.addEventListener("mouseleave", hideTip); });
+  });
+}
+function charts() { yearChart(); envChart(); yieldChart(); bigChart(); kindChart(); siteGrid(); nkChart(); }
+
+/* ---------- start ---------- */
+document.getElementById("theme").onclick = () => { const r = document.documentElement; r.dataset.theme = isDark() ? "light" : "dark"; setTiles(); legend(); redraws.forEach(f => f()); };
+charts(); setTiles(); legend(); setYears(Y0, Y1); placeNames(); side();
+</script>
+/*FULLSCREEN*/
+</body>
+</html>

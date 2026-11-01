@@ -1,0 +1,30 @@
+key,name,today,n,y0,y1,atm,ug,kind_of_territory,island,countries,yield_kt_mid,yield_kt_low,yield_kt_high,lat,lon
+nevada,Nevada Test Site and nearby ranges,"Nevada, United States",935,1951,1992,105,830,Own national territory,False,United States; United Kingdom,45784.3,15733.1,75835.6,37.0,-116.0
+trinity,"Trinity, Alamogordo","New Mexico, United States",1,1945,1945,1,0,Own national territory,False,United States,21.0,21.0,21.0,32.54,-105.57
+usmain,Other US mainland sites,"New Mexico, Colorado and Mississippi, United States",6,1961,1973,0,6,Own national territory,False,United States,110.7,110.7,110.7,34.46,-105.655
+amchitka,Amchitka Island,"Aleutian Islands, Alaska, United States",3,1965,1971,0,3,Own national territory,True,United States,3580.0,1080.0,6080.0,51.59,179.19
+bikini,Bikini Atoll,Marshall Islands,23,1946,1958,23,0,"Own colony, overseas or trust territory",True,United States,76837.1,76837.1,76837.1,11.35,165.2
+enewetak,Enewetak Atoll,Marshall Islands,43,1948,1958,43,0,"Own colony, overseas or trust territory",True,United States,31653.4,31653.4,31653.4,11.3,162.15
+johnston,Johnston Atoll,Central Pacific (US territory),12,1958,1962,12,0,"Own colony, overseas or trust territory",True,United States,20996.3,20176.3,21816.3,16.45,-169.32
+kiritimati,Kiritimati (Christmas Island),Kiribati,30,1957,1962,30,0,"Own colony, overseas or trust territory",True,United States; United Kingdom,29902.3,29902.3,29902.3,2.0,-157.0
+malden,Malden Island,Kiribati,3,1957,1957,3,0,"Own colony, overseas or trust territory",True,United Kingdom,1220.0,1220.0,1220.0,-4.0,-155.0
+ocean,Open ocean (Pacific and South Atlantic),High seas,7,1955,1962,7,0,Open ocean or space,False,United States,46.2,34.7,57.7,4.833,-11.5
+semipalatinsk,Semipalatinsk Test Site,Kazakhstan,455,1949,1989,116,339,Own national territory,False,Soviet Union,18280.4,8895.5,27665.3,49.98,78.03
+novaya,Novaya Zemlya,Arctic Russia,130,1955,1990,91,39,Own national territory,True,Soviet Union,280503.7,221118.6,339888.7,73.0,55.0
+kapustin,Kapustin Yar,"Astrakhan region, Russia",10,1957,1962,10,0,Own national territory,False,Soviet Union,983.4,983.4,983.4,48.0,46.0
+azgir,Azgir,Kazakhstan,17,1966,1979,0,17,Own national territory,False,Soviet Union,504.2,264.2,744.2,47.9,47.72
+ussrpne,Other Soviet sites (mostly peaceful explosions),"Russia, Kazakhstan, Ukraine, Uzbekistan and Turkmenistan",102,1954,1988,2,100,Own national territory,False,Soviet Union,1168.7,1158.7,1178.7,53.75,55.7
+lopnur,Lop Nur,"Xinjiang, China",45,1964,1996,23,22,Own national territory,False,China,21389.5,16853.0,25926.0,41.5,89.0
+reggane,Reggane,Algeria,4,1960,1961,4,0,"Own colony, overseas or trust territory",False,France,130.0,0.0,260.0,26.0,-0.095
+inekker,In Ekker,Algeria,13,1961,1966,0,13,"Own colony, overseas or trust territory",False,France,297.5,20.0,575.0,24.0,5.03
+moruroa,Moruroa Atoll,French Polynesia,179,1966,1995,42,137,"Own colony, overseas or trust territory",True,France,10160.0,1200.0,19120.0,-22.0,-139.0
+fangataufa,Fangataufa Atoll,French Polynesia,14,1966,1996,4,10,"Own colony, overseas or trust territory",True,France,2277.5,1000.0,3555.0,-22.203,-138.839
+montebello,Montebello Islands,Western Australia,3,1952,1956,3,0,Another state's territory or colony,True,United Kingdom,100.0,100.0,100.0,-20.4,115.55
+emu,Emu Field,South Australia,2,1953,1953,2,0,Another state's territory or colony,False,United Kingdom,18.0,18.0,18.0,-28.7,132.35
+maralinga,Maralinga,South Australia,7,1956,1957,7,0,Another state's territory or colony,False,United Kingdom,61.5,61.5,61.5,-30.0,131.0
+pokhran,Pokhran,"Rajasthan, India",3,1974,1998,0,3,Own national territory,False,India,20.5,0.0,41.0,27.07,71.7
+chagai,"Ras Koh Hills, Chagai","Balochistan, Pakistan",1,1998,1998,0,1,Own national territory,False,Pakistan,17.5,0.0,35.0,28.9,64.89
+kharan,Kharan Desert,"Balochistan, Pakistan",1,1998,1998,0,1,Own national territory,False,Pakistan,9.0,0.0,18.0,28.49,63.78
+punggye,Punggye-ri,"North Hamgyong, North Korea",6,2006,2017,0,6,Own national territory,False,North Korea,222.8,100.7,344.9,41.295,129.058
+hiroshima,Hiroshima,Japan,1,1945,1945,1,0,Wartime use,False,United States,15.0,15.0,15.0,34.23,132.27
+nagasaki,Nagasaki,Japan,1,1945,1945,1,0,Wartime use,False,United States,21.0,21.0,21.0,32.45,129.52

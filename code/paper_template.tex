@@ -1,0 +1,143 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\newfontfamily\headfont{Inter}[UprightFont=*-ExtraBold,BoldFont=*-ExtraBold,Extension=.otf,Path=/usr/share/fonts/opentype/inter/]
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{graphicx,booktabs,float,caption,array,xcolor,longtable}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage[round]{natbib}
+\usepackage{setspace}
+\setstretch{1.05}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\titleformat{\section}{\headfont\Large}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\headfont\large}{\thesubsection}{0.8em}{}
+\captionsetup{font=small,labelfont=bf}
+\urlstyle{same}
+\hypersetup{pdftitle={Every Nuclear Test},pdfauthor={Tristan Hotham}}
+
+\begin{document}
+\begin{center}
+{\Large\bfseries Every Nuclear Test\par}
+\vspace{0.4em}
+{\large Where, by whom and how big, from Trinity to North Korea:\\{{n|int}} nuclear tests, 1945 to 2017\par}
+\vspace{1.2em}
+{\large Tristan Hotham\par}
+\vspace{0.3em}
+{\small Independent researcher\\
+ORCID: 0000-0003-4931-9349\\
+DOI: @@DOI@@\par}
+\vspace{0.8em}
+2026
+\end{center}
+
+\begin{quote}
+\small
+\begin{center}\textbf{Abstract}\end{center}
+I map every known nuclear test explosion from the Trinity test of July 1945 to North Korea's test of September 2017, combining the list of {{n_sipri|int}} nuclear explosions from 1945 to 1998 compiled for SIPRI and the Swedish Defence Research Establishment with North Korea's six tests from 2006 to 2017. Excluding the two wartime bombs on Japan, eight countries carried out {{n|int}} tests with a total yield of about {{yield_total_mid|mt0}} megatons (central estimate; {{yield_total_lo|mt0}} to {{yield_total_hi|mt0}} megatons from the lower and upper estimates). Testing peaked in {{peak_year|raw}} with {{peak_n|int}} tests, and the tests of 1961 and 1962 released {{yield_61_62_pct|pc}} of all test yield. After the Partial Test Ban Treaty of 1963 testing moved underground: {{pre_atm_pct|pc}} of tests before the treaty were in the atmosphere or underwater, and {{post_ug_pct|pc}} of tests after it were underground, though France and China continued atmospheric testing until 1974 and 1980. Yield was highly concentrated: the {{mt_tests|int}} tests of a megaton or more account for {{mt_tests_yield_pct|pc}} of it, and Novaya Zemlya alone for {{nz_yield_pct|pc}}. {{island_pct|pc}} of tests, but {{island_yield_pct|pc}} of all yield, were on islands, and {{away_pct|pc}} of tests, with {{away_yield_pct|pc}} of the yield, were held in colonies, overseas or trust territories or another state's territory, including all of France's and Britain's. Since the Comprehensive Nuclear-Test-Ban Treaty opened for signature in 1996 there have been {{post_ctbt.n|int}} tests, by India, Pakistan and North Korea.
+
+\textbf{Keywords:} nuclear weapons testing; Partial Test Ban Treaty; Comprehensive Nuclear-Test-Ban Treaty; nuclear colonialism; Marshall Islands; French Polynesia; Semipalatinsk; Novaya Zemlya; open data; maps
+\end{quote}
+
+\section{Introduction}
+Between 1945 and 2017 eight countries exploded nuclear devices to develop and check their weapons, to study their effects and, in the United States and the Soviet Union, to dig, stimulate gas wells and probe the earth. The history of these tests is well documented in official lists \citep{doe,mikhailov}, in the compilation by \citet{sipri} for the Stockholm International Peace Research Institute, and in studies of their consequences \citep{unscear}. This paper does something simpler: it puts every test on one map and asks four descriptive questions. When were the tests, and how did treaties change them? How big were they, and where was their yield concentrated? Whose land, and whose sea, were they on? And what has happened since the test ban of 1996?
+
+It is accompanied by an interactive map with a year slider, filters for atmospheric and underground tests, and notes on each test site (\url{{{meta.page}}}).
+
+\section{Data}
+\textbf{The SIPRI list, 1945 to 1998.} \citet{sipri} list {{n_sipri|int}} nuclear explosions from 16 July 1945 to 30 May 1998, with date, testing state, site code, latitude and longitude, body and surface wave magnitudes, depth or height, lower and upper yield estimates in kilotons, purpose, a name where known, and method of firing. I used the version published by data is plural and the TidyTuesday project \citep{tidytuesday}. Two entries are the bombs dropped on Hiroshima and Nagasaki; they are kept in the data but excluded from every count of tests.
+
+\textbf{North Korea, 2006 to 2017.} The six North Korean tests are taken from the Wikipedia list of North Korean tests \citep{wikink}, using only the dates, positions and yield ranges given in the page's table: {{nk.first_lo|f1}} to {{nk.first_hi|f1}} kilotons in 2006 rising to {{nk.big_lo|int}} to {{nk.big_hi|int}} kilotons in 2017.
+
+\textbf{Names and context.} Names for the largest Soviet and Chinese tests, matched by date, state and yield, come from the Wikipedia list of nuclear tests \citep{wikilist}, and the names of the Indian and Pakistani tests from the pages on Pokhran-II and Chagai-I \citep{wikipok,wikichagai}. Facts about the sites (Table~\ref{tab:sites}) are taken from those pages, from \citet{unscear}, \citet{royal}, \citet{khalturin} and \citet{kuletz}. Outlines are from Natural Earth \citep{naturalearth}.
+
+\section{Methods}
+\textbf{Counting.} A test is one entry in the source. Salvo tests, in which several devices were fired together, count once, as in the SIPRI list; Chagai-I's five devices are one test. This gives {{n|int}} tests: {{n_sipri_tests|int}} from the SIPRI list and {{n_nk|int}} North Korean. The Wikipedia list totals {{wiki_tests|int}}, because it counts some salvoes, British safety trials and Soviet tests differently; the comparison is in Table~\ref{tab:countries}.
+
+\textbf{Yield.} The SIPRI list gives a lower and an upper estimate for each explosion; {{n_range_0|int}} tests have a lower estimate of zero, meaning ``less than'' the upper. I use the midpoint as a central estimate and report sums of the lower and upper estimates beside every total. Three tests have no yield. The central total, {{yield_total_mid|mt0}} megatons, is close to the {{wiki_total_kt|mt0}} megatons of the Wikipedia list.
+
+\textbf{Environment.} Tests in the air, from towers, balloons, aircraft, barges, ships and rockets, on the surface and in space are ``atmospheric''; tests in shafts, tunnels, galleries and mines, and shallow cratering shots, are ``underground''; underwater tests are kept separate. The Partial Test Ban Treaty of 1963 banned the first and last of these.
+
+\textbf{Sites and land.} The source's site codes, including spelling errors (``MURUEOA'', ``UKEAINE'' and others), were mapped to {{n_sites|int}} sites. {{n_approx_pos|int}} records with no position (0, 0) were placed at the median position of other records with the same site code, or at the place the code names, and flagged. For each site I record the status of the land at the time of the test: the testing state's own national territory; its colony, overseas territory or trust territory; another state's territory or colony; or the open ocean. British tests in Nevada and US tests at British-held Kiritimati count as on another state's land. Islands and atolls, including the Novaya Zemlya archipelago, are flagged.
+
+\textbf{Mapping.} On the map, circle radius is proportional to the cube root of yield, the way the radius of blast effects scales, so area grows with yield to the power two thirds. Tests that share an exact position in the source are spread over a small disc (at most {{spread_max_deg|f2}} degrees across) so that each can be selected.
+
+\section{Results}
+\subsection{When: the race to 1962}
+Testing grew through the 1950s to {{n_1958|int}} tests in 1958, stopped almost completely during the American, Soviet and British pause from November 1958 to September 1961 ({{n_1959|int}} tests in 1959, {{n_1960|int}} in 1960, all French), and then peaked at {{peak_n|int}} tests in {{peak_year|raw}}: {{peak_by_country.US|int}} American, {{peak_by_country.USSR|int}} Soviet, {{peak_by_country.UK|int}} British and {{peak_by_country.France|int}} French (Figure~\ref{fig:years}). {{peak_atm|int}} of the {{peak_year|raw}} tests were atmospheric. The tests of 1961 and 1962 released {{yield_61_62_pct|pc}} of all test yield ({{yield_1961|mt0}} and {{yield_1962|mt0}} megatons). From 1963 to 1992 there were {{n_1963_92|int}} tests, about {{avg_1963_92|int}} a year, peaking at {{max_after_1963|int}} in {{max_after_1963_year|raw}}. The United States and the Soviet Union carried out {{us_ussr_pct|pc}} of all tests.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_years.png}
+\caption{Nuclear tests per year by country, 1945 to 2017, with the 1958 to 1961 testing pause and the treaties of 1963, 1974 and 1996.}\label{fig:years}\end{figure}
+
+{{TABLE_COUNTRIES}}
+
+\subsection{Into the ground}
+Before the Partial Test Ban Treaty was signed on 5 August 1963, {{pre_atm_n|int}} of {{pre_n|int}} tests ({{pre_atm_pct|pc}}) were atmospheric or underwater; after it, {{post_ug_pct|pc}} of {{post_n|int}} were underground (Figure~\ref{fig:env}). All {{post_atm|int}} later atmospheric tests were by the two nuclear states that did not sign: France ({{post_atm_fr|int}}, in French Polynesia, until {{c.France.last_atm_year|raw}}) and China ({{post_atm_cn|int}}, at Lop Nur, until {{c.China.last_atm_year|raw}}). The last atmospheric test was Chinese, on {{last_atm.date|raw}}. In all, {{atm_total|int}} tests ({{env.0.pct|pc1}} plus {{env.1.n|int}} underwater) were in the open, but they carried {{atm_yield_pct|pc}} of the total yield. After the Threshold Test Ban Treaty limit of 150 kilotons took effect in 1976, none of the {{ttbt_n|int}} American and Soviet tests had an upper yield estimate above 150 kilotons.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_env.png}
+\caption{Tests per year by where the device went off: in the atmosphere or space, underwater, or underground.}\label{fig:env}\end{figure}
+
+\subsection{How big}
+Yield is concentrated in time, place and a few tests. The median test was {{median_kt|int}} kilotons and {{under_20_pct|pc}} had an upper estimate of 20 kilotons or less, but the {{mt_tests|int}} tests of one megaton or more carry {{mt_tests_yield_pct|pc}} of the total. The Soviet Union and the United States account for {{us_ussr_yield_pct|pc}} of the yield. By site (Figure~\ref{fig:yield}), Novaya Zemlya took {{nz_yield_pct|pc}} of all test yield in {{site.novaya.n|int}} tests ({{nz.pct_ussr_yield|pc}} of the Soviet total), followed by Bikini Atoll ({{site.bikini.yield_pct|pc1}}) and the Nevada Test Site ({{site.nevada.yield_pct|pc1}}), which hosted {{nevada_pct_n|pc}} of all tests.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_yield.png}
+\caption{Total yield by test site: central estimate with the range from the sums of lower and upper estimates.}\label{fig:yield}\end{figure}
+
+\subsection{The biggest tests}
+The largest was the Soviet test known as Tsar Bomba, an air drop over Novaya Zemlya on {{tsar.date|raw}}, at about 50 megatons, {{tsar.pct_total|pc1}} of all test yield. Of the twenty largest tests (Figure~\ref{fig:biggest}), {{top20_ussr|int}} were Soviet and {{top20_us|int}} American, and {{top20_1961_62|int}} took place in 1961 or 1962. The SIPRI list gives the Soviet test of 27 September 1962 a range of {{sep27_1962.lo|mt0}} to {{sep27_1962.hi|mt0}} megatons; its midpoint puts it second here, while Wikipedia gives 20 megatons. The largest American test, Castle Bravo at Bikini on 1 March 1954 local time, yielded 15 megatons; its fallout reached the inhabited Rongelap and Rongerik atolls, which were evacuated, and the crew of the Japanese fishing boat Daigo Fukuryū Maru \citep{wikilist}.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_biggest.png}
+\caption{The twenty largest nuclear tests by central yield estimate, with the source's range where it gives one.}\label{fig:biggest}\end{figure}
+
+\subsection{Whose land}
+{{kinds.0.pct|pc}} of tests were on the testing state's own national territory, but these carried {{kinds.0.yield_pct|pc}} of the yield (Figure~\ref{fig:land}). {{kinds.1.n|int}} tests ({{kinds.1.pct|pc}}) were in the testing state's colonies, overseas territories or trust territories, with {{kinds.1.yield_pct|pc}} of the yield, and {{kinds.2.n|int}} ({{kinds.2.pct|pc}}) on another state's territory or colony. Every French test ({{c.France.n|int}}) and every British test ({{c.UK.n|int}}) was outside the testing state's home territory.
+
+France tested {{algeria.n|int}} times in the Algerian Sahara from {{algeria.y0|raw}} to {{algeria.y1|raw}}, four times in the atmosphere at Reggane during the war of independence; {{algeria.after_indep|int}} of its underground tests at In Ekker took place after Algeria became independent on 5 July 1962. It then moved to Moruroa and Fangataufa in French Polynesia, where it carried out {{polynesia.n|int}} tests from {{polynesia.y0|raw}} to {{polynesia.y1|raw}}, {{polynesia.atm|int}} of them atmospheric. Britain tested {{australia.n|int}} times in Australia from {{australia.y0|raw}} to {{australia.y1|raw}}, including at Maralinga and Emu Field on Aboriginal lands \citep{royal}; {{kiribati.uk|int}} times on Malden Island and Kiritimati, then British-held and now part of Kiribati; and {{uk_at_nevada|int}} times in Nevada. The United States held {{marshall.n|int}} tests at Bikini and Enewetak in the Marshall Islands from {{marshall.y0|raw}} to {{marshall.y1|raw}}, a UN trust territory under US administration from 1947, whose people were moved before the tests \citep{unscear}; they released {{marshall.yield_pct|pc}} of all test yield and {{marshall.pct_us_yield|pc}} of the American total. The Soviet Union and China tested only within their own borders, at sites that lay in the Kazakh Soviet republic, in the Russian Arctic, where the Nenets residents of Novaya Zemlya were relocated \citep{khalturin}, and in Xinjiang. The Nevada Test Site lies on land the Western Shoshone claim under the Treaty of Ruby Valley \citep{kuletz}.
+
+Islands carried most of the yield: {{island_n|int}} tests ({{island_pct|pc}}) were on islands and atolls, but they released {{island_yield_pct|pc}} of all test yield and {{island_atm_yield_pct|pc}} of the atmospheric yield. The Pacific atolls of Bikini, Enewetak, Johnston, Kiritimati, Malden, Moruroa and Fangataufa together saw {{pacific_n|int}} tests and {{pacific_yield_pct|pc}} of the yield.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_land.png}
+\caption{Share of tests and yield by the status of the land at the time of the test, and on islands against the mainland.}\label{fig:land}\end{figure}
+
+{{TABLE_SITES}}
+
+\subsection{After 1996}
+The Comprehensive Nuclear-Test-Ban Treaty opened for signature on 24 September 1996 and has not entered into force. The last tests of the United States ({{c.US.last|raw}}), the Soviet Union ({{c.USSR.last|raw}}), the United Kingdom ({{c.UK.last|raw}}), France ({{c.France.last|raw}}) and China ({{c.China.last|raw}}) came before it. Since then there have been {{post_ctbt.n|int}} tests: two by India and two by Pakistan in May 1998 and six by North Korea from 2006 to 2017 (Figure~\ref{fig:nk}), whose estimated yields total {{nk.lo|int}} to {{nk.hi|int}} kilotons.
+
+\begin{figure}[tbp]\centering\includegraphics[width=.9\textwidth]{f_nk.png}
+\caption{North Korea's six tests: estimated yield ranges as given on Wikipedia, with the Hiroshima bomb for scale.}\label{fig:nk}\end{figure}
+
+\section{Limitations}
+The SIPRI list ends in 1998 and the North Korean records come from a tertiary source. Yields are estimates, many of them only upper bounds, and the central estimates for small tests are rough; the totals are dominated by large tests whose yields are better known. Counts depend on how salvoes, safety trials and failed tests are treated. Positions are as recorded, rounded in many cases, and {{n_approx_pos|int}} are approximate. The classification of land is a simple description of status at the time and does not capture the full history or present claims of the peoples concerned. Above all, this is a map of explosions, not of exposure or harm: fallout travelled far beyond the sites, and its effects on local populations and test personnel are studied elsewhere \citep{unscear}.
+
+\section{Conclusion}
+Nuclear testing was frequent, then hidden, then nearly over. Most tests were small and underground, on the testing state's own soil. But most of the energy released came from a few dozen atmospheric tests in the 1950s and early 1960s, set off over Arctic islands and Pacific atolls and in colonial and trust territories far from the governments that ordered them.
+
+\section*{Data and code availability}
+The interactive map is at \url{{{meta.page}}}. Data and code are at \url{{{meta.repo}}} and archived with this paper at @@DOI@@. Derived data are released under CC BY 4.0 and code under the MIT licence, except material derived from Wikipedia (the North Korean records, test names and site notes drawing on Wikipedia), which is shared under CC BY-SA 4.0.
+
+\section*{AI statement}
+I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.
+
+\begin{thebibliography}{99}
+\bibitem[Bergkvist and Ferm(2000)]{sipri} Bergkvist, N.-O. and Ferm, R. (2000) \emph{Nuclear Explosions 1945 to 1998}. Stockholm: Swedish Defence Research Establishment (FOA) and Stockholm International Peace Research Institute (SIPRI).
+\bibitem[Khalturin et al.(2005)]{khalturin} Khalturin, V. I., Rautian, T. G., Richards, P. G. and Leith, W. S. (2005) A review of nuclear testing by the Soviet Union at Novaya Zemlya, 1955 to 1990. \emph{Science and Global Security} 13: 1 to 42.
+\bibitem[Kuletz(1998)]{kuletz} Kuletz, V. L. (1998) \emph{The Tainted Desert: Environmental and Social Ruin in the American West}. New York: Routledge.
+\bibitem[Mikhailov(1996)]{mikhailov} Mikhailov, V. N. (ed.) (1996) \emph{USSR Nuclear Weapons Tests and Peaceful Nuclear Explosions, 1949 through 1990}. Sarov: RFNC-VNIIEF.
+\bibitem[Natural Earth(2026)]{naturalearth} Natural Earth (2026) Admin 0 countries and populated places. Public domain. \url{https://www.naturalearthdata.com/}
+\bibitem[Royal Commission(1985)]{royal} Royal Commission into British Nuclear Tests in Australia (1985) \emph{Report}. Canberra: Australian Government Publishing Service.
+\bibitem[TidyTuesday(2019)]{tidytuesday} R for Data Science Online Learning Community (2019) TidyTuesday, 20 August 2019: Nuclear Explosions. \url{https://github.com/rfordatascience/tidytuesday/tree/main/data/2019/2019-08-20}; from data is plural, \url{https://github.com/data-is-plural/nuclear-explosions}; credit Jesus Castagnetto.
+\bibitem[UNSCEAR(2000)]{unscear} United Nations Scientific Committee on the Effects of Atomic Radiation (2000) \emph{Sources and Effects of Ionizing Radiation}, Annex C: Exposures to the public from man-made sources of radiation. New York: United Nations.
+\bibitem[US DOE(2015)]{doe} US Department of Energy, National Nuclear Security Administration (2015) \emph{United States Nuclear Tests, July 1945 through September 1992}. DOE/NV-209, revision 16.
+\bibitem[Wikipedia(2026a)]{wikilist} Wikipedia contributors (2026) List of nuclear weapons tests. Revision {{meta.wiki_revisions.List of nuclear weapons tests|raw}}. CC BY-SA 4.0. \url{https://en.wikipedia.org/wiki/List_of_nuclear_weapons_tests}
+\bibitem[Wikipedia(2026b)]{wikink} Wikipedia contributors (2026) List of nuclear weapons tests of North Korea. Revision {{meta.wiki_revisions.List of nuclear weapons tests of North Korea|raw}}. CC BY-SA 4.0. \url{https://en.wikipedia.org/wiki/List_of_nuclear_weapons_tests_of_North_Korea}
+\bibitem[Wikipedia(2026c)]{wikipok} Wikipedia contributors (2026) Pokhran-II. Revision {{meta.wiki_revisions.Pokhran-II|raw}}. CC BY-SA 4.0. \url{https://en.wikipedia.org/wiki/Pokhran-II}
+\bibitem[Wikipedia(2026d)]{wikichagai} Wikipedia contributors (2026) Chagai-I. Revision {{meta.wiki_revisions.Chagai-I|raw}}. CC BY-SA 4.0. \url{https://en.wikipedia.org/wiki/Chagai-I}
+\end{thebibliography}
+\end{document}
